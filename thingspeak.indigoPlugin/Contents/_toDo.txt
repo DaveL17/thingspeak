@@ -1,0 +1,33 @@
+Thingspeak Plugin - Developed by: DaveL17
+
+ToDo:
+- Prettify debug output to Indigo log.
+
+- Change kstateimagesel to .Error when that function is available.
+
+- Update other plugins to take advantage of new
+  - sleep settings
+  - annotation of optional settings in plugins and manuals
+  - immediate application of plugin prefs
+
+Future:
+
+- Twitter stuff?
+
+- Status?
+
+- Consider adding some additional device states like:
+  - if there was an error,
+  - etc.
+
+- Provide a menu item to pull down information FROM Thingspeak??
+  - This is handled somewhat by logging the upload return. But there is
+    a potential need to download the entire data set and other information.
+ 
+- Allow devices to control their own individual upload intervals?
+  - This is non-trivial as the plugin would need to track mulitple
+    instances for multiple devices rather than a single sleep. One way
+    would be to set a "Next Data Upload" state for each device and 
+    then poll the states every 'n' seconds.  Need to think more about
+    the best way to make this happen.
+    

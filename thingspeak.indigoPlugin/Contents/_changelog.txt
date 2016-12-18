@@ -1,0 +1,59 @@
+v0.7.9
+- UI Refinements
+- Modifies string substitution methods for future functionality.
+- Updates error trapping for future functionality.
+
+v0.7.8
+- Adds location settings to plugin instance.
+- Adds Indigo Menu item to request data upload.
+- Adds Indigo Action item to request data upload.
+- Enhances UI feedback for communication and status.
+- Bug fixes and code enhancements:
+  - Changes url for update checker to use https.
+  - Enhances plugin preference handling and testing.
+  - Enhances debug logging.
+  - Fixes bug in upload interval timing.
+
+v0.7.7
+- Increases compliance with PEP8.
+
+v0.7.6
+- Adds capability to accept local IP for Thingspeak server address.
+- Better notification of device status in Indigo device list UI.
+- Adds Low/Medium/High debug levels.
+- Honors device start/stop comm.
+- Code refinements.
+
+v0.7.5
+- Adds MenuItems.xml including toggle debugging and check for updates now.
+
+v0.7.3
+- Fixes a problem with plugin package naming structure that can cause problems in some
+  installations.
+
+v0.7.2
+- Adds plugin update notifications.
+- Updated help URL.
+- UI refinements.
+- Code refinements.
+
+v0.7.1
+- devices.xml refinements.
+- Added control to allow device config fields to be hidden.
+- Catch exception where thing to be charted is no longer in the database.
+
+v0.7.0
+- Allow for device states and variable values in the same Thingspeak device.
+
+2014 03 18 v0.6.2
+- Added an onOffState value for display in the Indigo UI showing plugin health.
+- Added filter to display states applicable only to the device selected.
+
+2014 03 13 v0.6.0
+- Added support for tracking device state values (in addition to variables).
+- Rewrite of code used to construct Thingspeak URL dict.
+- Fixed bug where resetting device to 'None' threw NoneType error.
+
+2014 03 09 v0.5.2
+- Fixed bug where upload interval timer wasn't updating after config change.
+- Fixed bug where decimal points were stripped from variable values.

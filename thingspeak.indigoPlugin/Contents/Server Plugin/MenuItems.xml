@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<MenuItems>
+    <MenuItem id="checkForUpdates">
+    	<Name>Check for Plugin Updates...</Name>
+    	<CallbackMethod>checkVersionNow</CallbackMethod>
+    </MenuItem>
+    <MenuItem id="uploadDataNow">
+    	<Name>Upload Data Now</Name>
+    	<CallbackMethod>updateThingspeakDataMenu</CallbackMethod>
+    </MenuItem>
+    <MenuItem id="toggleDebug">
+    	<Name>Toggle Debugging</Name>
+    	<CallbackMethod>toggleDebugEnabled</CallbackMethod>
+    </MenuItem>
+</MenuItems>
+
+
