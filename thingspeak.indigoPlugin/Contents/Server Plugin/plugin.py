@@ -8,8 +8,7 @@ Author: DaveL17
 Credits:    Chris - http://www.australianrobotics.com.au/news/how-to-
                     talk-to-thingspeak-with-python-a-memory-cpu-monitor
             Karl (kw123) - device state restriction methods
-            Update Checker by: berkinet (with additional features by
-                    Travis Cook)
+            Update Checker by: berkinet (with additional features by Travis Cook)
 
 This script takes device and variable values and uploads them to
 Thingspeak. In order to use it, you will need to have a Thingspeak
@@ -25,6 +24,26 @@ and the plugin tries to adjust variable values as needed to make them
 compatible (i.e., converting a string to a float.
 """
 
+# TODO: Prettify debug output to Indigo log.
+# TODO: Change kstateimagesel to .Error when that function is available.
+# TODO: Update other plugins to take advantage of new
+#       - sleep settings
+#       - annotation of optional settings in plugins and manuals
+#       - immediate application of plugin prefs
+# TODO: Twitter stuff?
+# TODO: Status?
+# TODO: Consider adding some additional device states like:
+#       - if there was an error, etc.
+# TODO: Provide a menu item to pull down information FROM Thingspeak??
+#       - This is handled somewhat by logging the upload return. But there is
+#         a potential need to download the entire data set and other information.
+# TODO: Allow devices to control their own individual upload intervals?
+#       - This is non-trivial as the plugin would need to track mulitple
+#         instances for multiple devices rather than a single sleep. One way
+#         would be to set a "Next Data Upload" state for each device and
+#         then poll the states every 'n' seconds.  Need to think more about
+#         the best way to make this happen.
+
 import datetime
 import os.path
 import simplejson
@@ -38,6 +57,7 @@ try:
 except ImportError:
     pass
 
+
 kDefaultPluginPrefs = {
     'configMenuTimeoutInterval': 15,            # How long to wait on a server timeout.
     'configMenuUploadInterval' : 900,           # How long to wait before refreshing devices.
@@ -50,7 +70,6 @@ kDefaultPluginPrefs = {
     'updaterEmailsEnabled'     : False,         # Notification of plugin updates wanted.
     'logFileDate'              : "1970-01-01",  # Log file creation date.
     }
-
 
 class Plugin(indigo.PluginBase):
     def __init__(self, pluginId, pluginDisplayName, pluginVersion, pluginPrefs):

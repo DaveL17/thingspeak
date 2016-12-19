@@ -1,3 +1,6 @@
+v1.0.01
+- Initial GitHub release.
+
 v0.7.9
 - UI Refinements
 - Modifies string substitution methods for future functionality.
