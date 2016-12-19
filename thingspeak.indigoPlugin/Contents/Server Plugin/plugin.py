@@ -85,7 +85,7 @@ class Plugin(indigo.PluginBase):
         self.longitude      = self.pluginPrefs.get('longitude', 0)
         self.pluginName     = "com.fogbert.indigoplugin.thingspeak"
         self.uploadInterval = int(self.pluginPrefs.get('configMenuUploadInterval', 900))
-        updater_url         = "https://dl.dropboxusercontent.com/u/2796881/thingspeak_version.html"
+        updater_url         = "https://davel17.github.io/thingspeak/thingspeak_version.html"
         self.updater        = indigoPluginUpdateChecker.updateChecker(self, updater_url)
 
         # Convert old debugLevel scale to new scale.
