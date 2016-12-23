@@ -57,6 +57,12 @@ try:
 except ImportError:
     pass
 
+__author__    = "DaveL17"
+__build__     = ""
+__copyright__ = 'Copyright 2016 DaveL17'
+__license__   = "MIT"
+__title__     = 'Thingspeak Plugin for Indigo Home Control'
+__version__   = '1.0.01'
 
 kDefaultPluginPrefs = {
     'configMenuTimeoutInterval': 15,            # How long to wait on a server timeout.
