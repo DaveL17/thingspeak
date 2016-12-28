@@ -30,25 +30,25 @@
 <p>All settings that affect the plugin’s overall operations are found in the Plugin Configuration dialog. The settings are divided into four sections: Upload Settings,
     Location Settings, Plugin Update Notification Settings, and Debug Settings.</p>
 <ul>
-    <li><span>&nbsp;Upload Settings&nbsp;</span> - Thingspeak Upload Settings control the frequency with which the plugin interacts with the Thingspeak system. There is only one plugin
+    <li><span>&nbsp;Upload Settings&nbsp;</span> — Thingspeak Upload Settings control the frequency with which the plugin interacts with the Thingspeak system. There is only one plugin
         timing setting: Upload Interval. The Upload interval setting controls how often each Thingspeak Plugin device will reach out to the Thingspeak servers to upload data. This
         setting affects all devices that you create (all devices upload at the same frequency.) The options range from every 15 seconds to once per day (15 seconds is the minimum
         allowed by Thingspeak.)
     </li>
     <br>
-    <li><span>&nbsp;Location Settings (optional)&nbsp;</span> - The plugin location settings contain information regarding the latitude, longitude and elevation of your Indigo network.
+    <li><span>&nbsp;Location Settings (optional)&nbsp;</span> — The plugin location settings contain information regarding the latitude, longitude and elevation of your Indigo network.
         These settings are entirely optional and can be left blank. You can also choose to populate some and not others (although it would be weird to set latitude and not longitude I
         suppose.) They are provided because it is possible to upload this information to your Thingspeak channels should you choose to do so. The settings here will pertain to
         all of your Thingspeak devices. Latitude and Longitude are decimal values, and the sign of each number is important. A wrong sign here could accidentally put you on the
         other side of the world. The elevation value is an whole number integer and is measured in meters (and can also be negative.)
     </li>
     <br>
-    <li><span>&nbsp;Update Notifications (optional)&nbsp;</span> - The plugin update notification settings tell the plugin to alert you when a new version of the plugin is available. To
+    <li><span>&nbsp;Update Notifications (optional)&nbsp;</span> — The plugin update notification settings tell the plugin to alert you when a new version of the plugin is available. To
         enable notifications, check the appropriate box and enter a valid email address. This facility also requires that the user enable Indigo’s facility to send and receive email
         messages. The plugin does not send messages on its own or collect any information about usage. All personal information is stored on the user’s machine.
     </li>
     <br>
-    <li><span>&nbsp;Debugging&nbsp;</span> - If things aren’t working the way that you expect them to, turning on the debugging facility within the plugin can help us isolate the cause,
+    <li><span>&nbsp;Debugging&nbsp;</span> — If things aren’t working the way that you expect them to, turning on the debugging facility within the plugin can help us isolate the cause,
         and the output is tremendously useful when reporting bugs. There are three levels of debug logging—Low, Medium and High. Selecting Low, provides a minimal amount of debug logging
         (might still be a lot, really.) Medium provides for a pretty massive amount of logging (but keeps all sensitive data like API Write Keys from being displayed.) A
         setting of High will allow this sensitive information to be logged, so use with care when posting log results to a public place.
@@ -64,7 +64,7 @@
     Each Thingspeak Device can contain up to 8 data elements for upload (a limitation imposed by Thingspeak, not by the plugin.) Data elements are added in the following
     few steps:
 <ol>
-    <li>Enter the corresponding API Write key in the appropriate box (the one in the picture is random typing. If it’s the same as yours, it’s total coincidence.)</li>
+    <li>Enter the corresponding API Write key in the appropriate box (you obtain these from Thingspeak.)</li>
     <br>
     <li>For the first “Thing” to be tracked, select the drop-down box to select the corresponding Indigo Device or Indigo Variable that you would like to track. Indigo
         Devices are preceded by (D) and Variables are preceded by a (V).
@@ -93,15 +93,15 @@
 <img class="TextWrap" src="img/img_pluginMenuItems.png">
 <p>There are three custom menu items for the Thingspeak plugin:
 <ul>
-    <li><span>&nbsp;“Check for plugin updates”&nbsp;</span> — Selecting this option will test whether there is an available update to the Thingspeak plugin. This option doesn’t require
+    <li><span>&nbsp;Check for Plugin Updates&nbsp;</span> — Selecting this option will test whether there is an available update to the Thingspeak plugin. This option doesn’t require
         you to have an email account configured in Indigo (it will notify you in the Indigo log instead.)
     </li>
     <br>
-    <li><span>&nbsp;“Upload Data Now”&nbsp;</span> — This will cause the plugin to initiate a refresh cycle outside the scheduled update. This will not be successful if the last update
+    <li><span>&nbsp;Upload Data Now&nbsp;</span> — This will cause the plugin to initiate a refresh cycle outside the scheduled update. This will not be successful if the last update
         was less than 15 seconds ago. This is a (completely reasonable) time limit imposed by Thingspeak—not imposed by the plugin.
     </li>
     <br>
-    <li><span>&nbsp;“Toggle Debugging”&nbsp;</span> — This will toggle the debug option at whatever level is currently set in the plugin configuration dialog. If debug is on, selecting
+    <li><span>&nbsp;Toggle Debugging&nbsp;</span> — This will toggle the debug option at whatever level is currently set in the plugin configuration dialog. If debug is on, selecting
         this option will turn it off (and vice versa.)
     </li>
 </ul>
