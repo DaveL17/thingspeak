@@ -1,3 +1,7 @@
+v1.0.02
+- Moves support URL to Github.
+- Code refinements.
+
 v1.0.01
 - Initial GitHub release.
 

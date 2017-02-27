@@ -1,80 +1,84 @@
 <?xml version="1.0"?>
 
+<!-- Be sure to add any new plugin prefs to kDefaultPluginPrefs in plugin.py -->
+
 <PluginConfig>
-  <Field id="infoLabel0" type="label">
-    <Label>Thingspeak Plugin - Developed by DaveL17</Label>
-  </Field>
-  <Field id="space0" type="label">
-    <Label> </Label>
-  </Field>    
-  <Field id="separator0" type="separator"/>
-  <Field id="space1" type="label">
-    <Label>Upload Settings:</Label>
-  </Field>  
-  <Field id="configMenuUploadInterval" type="menu" defaultValue="900" tooltip="How frequently would you would like to upload data to Thingspeak?">
-    <Label>Upload interval:</Label>
-    <List>
-      <Option value="15">15 Seconds</Option>
-      <Option value="30">30 Seconds</Option>
-      <Option value="60">1 Minute</Option>
-      <Option value="120">2 Minutes</Option>
-      <Option value="300">5 Minutes</Option>
-      <Option value="900">15 Minutes</Option>
-      <Option value="3600">1 Hour</Option>
-      <Option value="86400">1 Day</Option>
-    </List>
-  </Field>
-  <Field id="separator1" type="separator"/>
-  <Field id="space2" type="label">
-    <Label>Location Settings (optional):</Label>
-  </Field>  
-  <Field id="latitude" type="textfield" defaultValue="0" tooltip="Please enter the latitude of your Indigo Server in degrees (decimal).">
-    <Label>Latitude:</Label>
-  </Field>
-  <Field id="longitude" type="textfield" defaultValue="0" tooltip="Please enter the longitude of your Indigo Server in degrees (decimal).">
-    <Label>Longitude:</Label>
-  </Field>
-  <Field id="elevation" type="textfield" defaultValue="0" tooltip="Please enter the elevation of your Indigo Server in whole meters (integer).">
-    <Label>Elevation:</Label>
-  </Field>
-  <Field id="separator2" type="separator"/>
-  <Field id="space3" type="label">
-    <Label>Plugin Update Notifications (optional):</Label>
-  </Field>  
-  <Field id="updaterEmailsEnabled" type="checkbox" defaultValue="false" tooltip="Enables (disables) email notifications.">
-    <Label> </Label>
-    <Description>Enable update notifications</Description>
-  </Field>
-  <Field id="updaterEmail" type="textfield" tooltip="Please enter the email address to receive notifications of updates to the Thingspeak plugin.">
-    <Label>Email address:</Label>
-  </Field>
-  <Field id="separator3" type="separator"/>
-  <Field id="space5" type="label">
-    <Label>Debug Settings:</Label>
-  </Field>  
-  <Field id="showDebugInfo" type="checkbox">
-    <Label> </Label>
-    <Description>Enable debug logging</Description>
-  </Field>
-  <Field id="showDebugLevel" type="menu" defaultValue="Low" visibleBindingId="showDebugInfo" visibleBindingValue="true" tooltip="Controls the amount of debug information written to the log.">
-    <Label>Debug level:</Label>
-    <List>
-      <Option value="1">Low</Option>
-      <Option value="2">Medium</Option>
-      <Option value="3">High</Option>
-    </List>   
-  </Field>
-  <Field id="space7" type="label" visibleBindingId="showDebugInfo" visibleBindingValue="true" fontSize="small">
-	<Label>Turn on debugging only when needed. Be careful when posting the output to the forums or other public places as it could expose sensitive information.
+    <Field id="infoLabel0" type="label">
+        <Label>Thingspeak Plugin - Developed by DaveL17</Label>
+    </Field>
+    <Field id="space0" type="label">
+        <Label/>
+    </Field>
+    <Field id="separator0" type="separator"/>
+    <Field id="space1" type="label">
+        <Label>Upload Settings:</Label>
+    </Field>
+    <Field id="configMenuUploadInterval" type="menu" defaultValue="900" tooltip="How frequently would you would like to upload data to Thingspeak?">
+        <Label>Upload interval:</Label>
+        <List>
+            <Option value="15">15 Seconds</Option>
+            <Option value="30">30 Seconds</Option>
+            <Option value="60">1 Minute</Option>
+            <Option value="120">2 Minutes</Option>
+            <Option value="300">5 Minutes</Option>
+            <Option value="900">15 Minutes</Option>
+            <Option value="3600">1 Hour</Option>
+            <Option value="86400">1 Day</Option>
+        </List>
+    </Field>
+    <Field id="separator1" type="separator"/>
+    <Field id="space2" type="label">
+        <Label>Location Settings (optional):</Label>
+    </Field>
+    <Field id="latitude" type="textfield" defaultValue="0" tooltip="Please enter the latitude of your Indigo Server in degrees (decimal).">
+        <Label>Latitude:</Label>
+    </Field>
+    <Field id="longitude" type="textfield" defaultValue="0" tooltip="Please enter the longitude of your Indigo Server in degrees (decimal).">
+        <Label>Longitude:</Label>
+    </Field>
+    <Field id="elevation" type="textfield" defaultValue="0" tooltip="Please enter the elevation of your Indigo Server in whole meters (integer).">
+        <Label>Elevation:</Label>
+    </Field>
+    <Field id="separator2" type="separator"/>
+    <Field id="space3" type="label">
+        <Label>Plugin Update Notifications (optional):</Label>
+    </Field>
+    <Field id="updaterEmailsEnabled" type="checkbox" defaultValue="false" tooltip="Enables (disables) email notifications.">
+        <Label/>
+        <Description>Enable update notifications</Description>
+    </Field>
+    <Field id="updaterEmail" type="textfield" tooltip="Please enter the email address to receive notifications of updates to the Thingspeak plugin.">
+        <Label>Email address:</Label>
+    </Field>
+    <Field id="separator3" type="separator"/>
+    <Field id="space5" type="label">
+        <Label>Debug Settings:</Label>
+    </Field>
+    <Field id="showDebugInfo" type="checkbox" defaultValue="false">
+        <Label/>
+        <Description>Enable debug logging</Description>
+    </Field>
+    <Field id="showDebugLevel" type="menu" defaultValue="Low" visibleBindingId="showDebugInfo" visibleBindingValue="true"
+           tooltip="Controls the amount of debug information written to the log.">
+        <Label>Debug level:</Label>
+        <List>
+            <Option value="1">Low</Option>
+            <Option value="2">Medium</Option>
+            <Option value="3">High</Option>
+        </List>
+    </Field>
+    <Field id="space7" type="label" visibleBindingId="showDebugInfo" visibleBindingValue="true" fontSize="small">
+        <Label>Turn on debugging only when needed. Be careful when posting the output to the forums or other public places as it could expose sensitive information.
 
-  Low=Minimal debugging.
-  Medium=All debug logging except sensitive information.
-  High=May contain sensitive information.</Label>
-  </Field>
+            Low=Minimal debugging.
+            Medium=All debug logging except sensitive information.
+            High=May contain sensitive information.
+        </Label>
+    </Field>
 
-<!-- Hidden fields. -->
-  <Field id="logFileDate" type="textfield" defaultValue="1970-01-01" hidden="True">
-    <Label> </Label>
-  </Field>
+    <!-- Hidden fields. -->
+    <Field id="logFileDate" type="textfield" defaultValue="1970-01-01" hidden="True">
+        <Label/>
+    </Field>
 
 </PluginConfig>

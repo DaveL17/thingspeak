@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>PluginVersion</key>
-	<string>1.0.01</string>
+	<string>1.0.02</string>
 	<key>ServerApiVersion</key>
 	<string>1.0.0</string>
 	<key>IwsApiVersion</key>
@@ -20,7 +20,7 @@
 	<array>
 		<dict>
 			<key>CFBundleURLName</key>
-			<string>http://www.perceptiveautomation.com/userforum/viewtopic.php?f=134&amp;t=11678</string>
+			<string>https://davel17.github.io/thingspeak/</string>
 		</dict>
 	</array>
 </dict>

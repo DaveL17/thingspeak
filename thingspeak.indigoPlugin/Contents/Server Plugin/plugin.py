@@ -29,7 +29,6 @@ compatible (i.e., converting a string to a float.
 # TODO: Update other plugins to take advantage of new
 #       - sleep settings
 #       - annotation of optional settings in plugins and manuals
-#       - immediate application of plugin prefs
 # TODO: Twitter stuff?
 # TODO: Status?
 # TODO: Consider adding some additional device states like:
@@ -37,7 +36,7 @@ compatible (i.e., converting a string to a float.
 # TODO: Provide a menu item to pull down information FROM Thingspeak??
 #       - This is handled somewhat by logging the upload return. But there is
 #         a potential need to download the entire data set and other information.
-# TODO: Allow devices to control their own individual upload intervals?
+# TODO: Allow devices to control their own individual upload intervals (now a feature request) and also manual update (maybe hang a trigger on this?)
 #       - This is non-trivial as the plugin would need to track mulitple
 #         instances for multiple devices rather than a single sleep. One way
 #         would be to set a "Next Data Upload" state for each device and
@@ -59,22 +58,22 @@ except ImportError:
 
 __author__    = "DaveL17"
 __build__     = ""
-__copyright__ = 'Copyright 2016 DaveL17'
+__copyright__ = 'Copyright 2017 DaveL17'
 __license__   = "MIT"
 __title__     = 'Thingspeak Plugin for Indigo Home Control'
-__version__   = '1.0.01'
+__version__   = '1.0.02'
 
 kDefaultPluginPrefs = {
-    'configMenuTimeoutInterval': 15,            # How long to wait on a server timeout.
-    'configMenuUploadInterval' : 900,           # How long to wait before refreshing devices.
-    'elevation'                : 0,             # Elevation of data source.
-    'latitude'                 : 0,             # Latitude of data source.
-    'longitude'                : 0,             # Longitude of data source.
-    'showDebugInfo'            : False,         # Verbose debug logging?
-    'showDebugLevel'           : 1,             # Low, Medium or High debug output.
-    'updaterEmail'             : "",            # Email to notify of plugin updates.
-    'updaterEmailsEnabled'     : False,         # Notification of plugin updates wanted.
-    'logFileDate'              : "1970-01-01",  # Log file creation date.
+    u'configMenuTimeoutInterval': 15,            # How long to wait on a server timeout.
+    u'configMenuUploadInterval' : 900,           # How long to wait before refreshing devices.
+    u'elevation'                : 0,             # Elevation of data source.
+    u'latitude'                 : 0,             # Latitude of data source.
+    u'logFileDate'              : "1970-01-01",  # Log file creation date.
+    u'longitude'                : 0,             # Longitude of data source.
+    u'showDebugInfo'            : False,         # Verbose debug logging?
+    u'showDebugLevel'           : 1,             # Low, Medium or High debug output.
+    u'updaterEmail'             : "",            # Email to notify of plugin updates.
+    u'updaterEmailsEnabled'     : False,         # Notification of plugin updates wanted.
     }
 
 class Plugin(indigo.PluginBase):
@@ -261,18 +260,20 @@ class Plugin(indigo.PluginBase):
 
     def listGenerator(self, filter="", valuesDict=None, typeId="", targetId=0):
         """This method collects IDs and names for all Indigo devices and
-        variables. It creates a dictionary of the form
+        variables. It creates a list of the form:
         ((dev.id, dev.name), (var.id, var.name)).
         """
         self.debugLog(u"listGenerator() method called.")
 
-        dev_list = [(dev.id, u"(D) {0}".format(dev.name)) for dev in indigo.devices]
-        var_list = [(var.id, u"(V) {0}".format(var.name)) for var in indigo.variables]
-        master_list     = dev_list + var_list
+        master_list = []
+        [master_list.append((dev.id, u"(D) {0}".format(dev.name))) for dev in indigo.devices.iter()]
+        [master_list.append((var.id, u"(V) {0}".format(var.name))) for var in indigo.variables.iter()]
         master_list.append(('None', 'None'))
+
         if self.debugLevel >= 3:
             self.debugLog(u"Generated list of devices and variables:")
             self.debugLog(unicode(master_list))
+
         return master_list
 
     def deviceStateGenerator1(self, filter="", valuesDict=None, typeId="", targetId=0):
