@@ -1,5 +1,8 @@
 v1.0.02
+- Simplifies Thingspeak device configuration.
 - Moves support URL to Github.
+- Properly sets icon state to off when plugin is disabled.
+- UI refinements.
 - Code refinements.
 
 v1.0.01

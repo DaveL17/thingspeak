@@ -14,7 +14,7 @@
             </Field>
             <Field id="devicePort" type="checkbox" defaultValue="false">
                 <Label>Local Server:</Label>
-                <Description fontSize="small">(You are running a local Thingspeak server.)</Description>
+                <Description fontSize="small">(Check if you are running a local Thingspeak server.)</Description>
             </Field>
             <Field id="devicePortHelp" type="label" visibleBindingId="devicePort" visibleBindingValue="true">
                 <Label>Please enter the IP address including the port number (default is port 3000.)</Label>
@@ -31,17 +31,9 @@
             <Field id="thing1" type="menu" defaultValue="None">
                 <Label>Thing 1:</Label>
                 <List class="self" filter="" method="listGenerator" dynamicReload="true"/>
-            </Field>
-            <Field id="checkbox1" type="checkbox" defaultValue="false" hidden="false">
-                <Label>Show settings:</Label>
-                <Description/>
-            </Field>
-            <Field id="thing1Button" type="button" defaultValue="None" visibleBindingId="checkbox1" visibleBindingValue="true">
-                <Label/>
-                <Title>Refresh</Title>
                 <CallbackMethod>deviceStateGenerator1</CallbackMethod>
             </Field>
-            <Field id="thing1State" type="menu" defaultValue="None" visibleBindingId="checkbox1" visibleBindingValue="true">
+            <Field id="thing1State" type="menu" defaultValue="None">
                 <Label>Value to chart:</Label>
                 <List class="self" filter="" method="deviceStateGenerator1" dynamicReload="true"/>
             </Field>
@@ -51,17 +43,9 @@
             <Field id="thing2" type="menu" defaultValue="None" hidden="false">
                 <Label>Thing 2:</Label>
                 <List class="self" filter="" method="listGenerator" dynamicReload="true"/>
-            </Field>
-            <Field id="checkbox2" type="checkbox" defaultValue="false" hidden="false">
-                <Label>Show settings:</Label>
-                <Description/>
-            </Field>
-            <Field id="thing2Button" type="button" defaultValue="None" visibleBindingId="checkbox2" visibleBindingValue="true">
-                <Label/>
-                <Title>Refresh</Title>
                 <CallbackMethod>deviceStateGenerator2</CallbackMethod>
             </Field>
-            <Field id="thing2State" type="menu" defaultValue="None" visibleBindingId="checkbox2" visibleBindingValue="true">
+            <Field id="thing2State" type="menu" defaultValue="None">
                 <Label>Value to chart:</Label>
                 <List class="self" filter="" method="deviceStateGenerator2" dynamicReload="true"/>
             </Field>
@@ -71,17 +55,9 @@
             <Field id="thing3" type="menu" defaultValue="None" hidden="false">
                 <Label>Thing 3:</Label>
                 <List class="self" filter="" method="listGenerator" dynamicReload="true"/>
-            </Field>
-            <Field type="checkbox" id="checkbox3" defaultValue="false" hidden="false">
-                <Label>Show settings:</Label>
-                <Description/>
-            </Field>
-            <Field id="thing3Button" type="button" defaultValue="None" visibleBindingId="checkbox3" visibleBindingValue="true">
-                <Label/>
-                <Title>Refresh</Title>
                 <CallbackMethod>deviceStateGenerator3</CallbackMethod>
             </Field>
-            <Field id="thing3State" type="menu" defaultValue="None" visibleBindingId="checkbox3" visibleBindingValue="true">
+            <Field id="thing3State" type="menu" defaultValue="None">
                 <Label>Value to chart:</Label>
                 <List class="self" filter="" method="deviceStateGenerator3" dynamicReload="true"/>
             </Field>
@@ -91,17 +67,9 @@
             <Field id="thing4" type="menu" defaultValue="None" hidden="false">
                 <Label>Thing 4:</Label>
                 <List class="self" filter="" method="listGenerator" dynamicReload="true"/>
-            </Field>
-            <Field type="checkbox" id="checkbox4" defaultValue="false" hidden="false">
-                <Label>Show settings:</Label>
-                <Description/>
-            </Field>
-            <Field id="thing4Button" type="button" defaultValue="None" visibleBindingId="checkbox4" visibleBindingValue="true">
-                <Label/>
-                <Title>Refresh</Title>
                 <CallbackMethod>deviceStateGenerator4</CallbackMethod>
             </Field>
-            <Field id="thing4State" type="menu" defaultValue="None" visibleBindingId="checkbox4" visibleBindingValue="true">
+            <Field id="thing4State" type="menu" defaultValue="None">
                 <Label>Value to chart:</Label>
                 <List class="self" filter="" method="deviceStateGenerator4" dynamicReload="true"/>
             </Field>
@@ -111,17 +79,9 @@
             <Field id="thing5" type="menu" defaultValue="None" hidden="false">
                 <Label>Thing 5:</Label>
                 <List class="self" filter="" method="listGenerator" dynamicReload="true"/>
-            </Field>
-            <Field type="checkbox" id="checkbox5" defaultValue="false" hidden="false">
-                <Label>Show settings:</Label>
-                <Description/>
-            </Field>
-            <Field id="thing5Button" type="button" defaultValue="None" visibleBindingId="checkbox5" visibleBindingValue="true">
-                <Label/>
-                <Title>Refresh</Title>
                 <CallbackMethod>deviceStateGenerator5</CallbackMethod>
             </Field>
-            <Field id="thing5State" type="menu" defaultValue="None" visibleBindingId="checkbox5" visibleBindingValue="true">
+            <Field id="thing5State" type="menu" defaultValue="None">
                 <Label>Value to chart:</Label>
                 <List class="self" filter="" method="deviceStateGenerator5" dynamicReload="true"/>
             </Field>
@@ -131,17 +91,9 @@
             <Field id="thing6" type="menu" defaultValue="None" hidden="false">
                 <Label>Thing 6:</Label>
                 <List class="self" filter="" method="listGenerator" dynamicReload="true"/>
-            </Field>
-            <Field type="checkbox" id="checkbox6" defaultValue="false" hidden="false">
-                <Label>Show settings:</Label>
-                <Description/>
-            </Field>
-            <Field id="thing6Button" type="button" defaultValue="None" visibleBindingId="checkbox6" visibleBindingValue="true">
-                <Label/>
-                <Title>Refresh</Title>
                 <CallbackMethod>deviceStateGenerator6</CallbackMethod>
             </Field>
-            <Field id="thing6State" type="menu" defaultValue="None" visibleBindingId="checkbox6" visibleBindingValue="true">
+            <Field id="thing6State" type="menu" defaultValue="None">
                 <Label>Value to chart:</Label>
                 <List class="self" filter="" method="deviceStateGenerator6" dynamicReload="true"/>
             </Field>
@@ -151,17 +103,9 @@
             <Field id="thing7" type="menu" defaultValue="None" hidden="false">
                 <Label>Thing 7:</Label>
                 <List class="self" filter="" method="listGenerator" dynamicReload="true"/>
-            </Field>
-            <Field type="checkbox" id="checkbox7" defaultValue="false" hidden="false">
-                <Label>Show settings:</Label>
-                <Description/>
-            </Field>
-            <Field id="thing7Button" type="button" defaultValue="None" visibleBindingId="checkbox7" visibleBindingValue="true">
-                <Label/>
-                <Title>Refresh</Title>
                 <CallbackMethod>deviceStateGenerator7</CallbackMethod>
             </Field>
-            <Field id="thing7State" type="menu" defaultValue="None" visibleBindingId="checkbox7" visibleBindingValue="true">
+            <Field id="thing7State" type="menu" defaultValue="None">
                 <Label>Value to chart:</Label>
                 <List class="self" filter="" method="deviceStateGenerator7" dynamicReload="true"/>
             </Field>
@@ -171,17 +115,9 @@
             <Field id="thing8" type="menu" defaultValue="None">
                 <Label>Thing 8 :</Label>
                 <List class="self" filter="" method="listGenerator" dynamicReload="true"/>
-            </Field>
-            <Field type="checkbox" id="checkbox8" defaultValue="false" hidden="false">
-                <Label>Show settings:</Label>
-                <Description/>
-            </Field>
-            <Field id="thing8Button" type="button" defaultValue="false" visibleBindingId="checkbox8" visibleBindingValue="true">
-                <Label/>
-                <Title>Refresh</Title>
                 <CallbackMethod>deviceStateGenerator8</CallbackMethod>
             </Field>
-            <Field id="thing8State" type="menu" defaultValue="None" visibleBindingId="checkbox8" visibleBindingValue="true">
+            <Field id="thing8State" type="menu" defaultValue="None">
                 <Label>Value to chart:</Label>
                 <List class="self" filter="" method="deviceStateGenerator8" dynamicReload="true"/>
             </Field>

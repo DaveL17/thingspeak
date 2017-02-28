@@ -42,6 +42,7 @@ compatible (i.e., converting a string to a float.
 #         would be to set a "Next Data Upload" state for each device and
 #         then poll the states every 'n' seconds.  Need to think more about
 #         the best way to make this happen.
+# TODO: refine status messages to Indigo UI when plugin is starting/stopping/refreshing.
 
 import datetime
 import os.path
@@ -118,7 +119,10 @@ class Plugin(indigo.PluginBase):
 
     def shutdown(self):
         self.debugLog(u"Thingspeak shutdown() method called.")  # Do any cleanup necessary before exiting
-        pass
+        """shutdown(self)"""
+
+        for dev in indigo.devices.iter('self'):
+            dev.updateStateImageOnServer(indigo.kStateImageSel.SensorOff)
 
     def deviceStartComm(self, dev):
         self.debugLog(u"deviceStartComm() method called. Starting Thingspeak device: {0}".format(dev.name))
@@ -285,285 +289,172 @@ class Plugin(indigo.PluginBase):
         """
         self.debugLog(u"deviceStateGenerator1 method called.")
 
-        state_list_1 = []
-
-        # If there are no Thingspeak devices created yet.
         if not valuesDict:
-            return state_list_1
+            return []
 
         if valuesDict and "thing1" in valuesDict:
-
-            # If an item has been selected.
-            if valuesDict['thing1'] != "" and valuesDict['thing1'] != "None":
-                device_string = int(valuesDict['thing1'])
-
+            if valuesDict['thing1'] != "":
                 try:
-                    # If it's a device, grab the selected state.
-                    for devID in indigo.devices.iterkeys():
-
-                        if device_string == devID:
-
-                            # If there's no device specified, the state
-                            # is NoneType.
-                            for state in indigo.devices[device_string].states:
-
-                                # if ".ui" in state or "All" in state or "zone" in state:
-                                if any(item in state for item in (".ui", "All", "zone")):
-                                    pass
-                                else:
-                                    state_list_1.append(state)
-
-                    # If it's not a device, it's a variable. Grab it's value.
-                    for varID in indigo.variables.iterkeys():
-
-                        if device_string == varID:
-                            var = indigo.variables[device_string].name
-                            state_list_1.append(var + u" value")
-
-                # If it's somehow not a device or a variable, skip it.
-                except Exception as error:
-                    indigo.server.log(u"Element not of device type or variable type. Skipping.")
-                    pass
-
-                # Append the list with a "None" choice.
-                state_list_1.append("None")
-                return state_list_1
-
-            # If an item has not been selected, return and empty list.
+                    if int(valuesDict['thing1']) in indigo.devices:
+                        dev = indigo.devices[int(valuesDict['thing1'])]
+                        return [x for x in dev.states.keys() if ".ui" not in x]
+                    elif int(valuesDict['thing1']) in indigo.variables:
+                        return [('value', 'value')]
+                    else:
+                        return [('None', 'None')]
+                except ValueError:
+                    return [('None', 'None')]
             else:
-                return state_list_1
+                return [('None', 'None')]
 
     def deviceStateGenerator2(self, filter="", valuesDict=None, typeId="", targetId=0):
         self.debugLog(u"deviceStateGenerator2 method called.")
-        state_list_2 = []
 
         if not valuesDict:
-            return state_list_2
+            return []
 
         if valuesDict and "thing2" in valuesDict:
-            if valuesDict['thing2'] != "" and valuesDict['thing2'] != "None":
-                device_string = int(valuesDict['thing2'])
+
+            # If an item has been selected.
+            if valuesDict['thing2'] != "":
                 try:
-                    for devID in indigo.devices.iterkeys():
-                        if device_string == devID:
-                            for state in indigo.devices[device_string].states:
-                                # if ".ui" in state or "All" in state or "zone" in state:
-                                if any(item in state for item in (".ui", "All", "zone")):
-                                    pass
-                                else:
-                                    state_list_2.append(state)
-
-                    for varID in indigo.variables.iterkeys():
-                        if device_string == varID:
-                            var = indigo.variables[device_string].name
-                            state_list_2.append(var + u" value")
-                except Exception as error:
-                    pass
-
-                state_list_2.append("None")
-                return state_list_2
-
+                    if int(valuesDict['thing2']) in indigo.devices:
+                        dev = indigo.devices[int(valuesDict['thing2'])]
+                        return [x for x in dev.states.keys() if ".ui" not in x]
+                    elif int(valuesDict['thing2']) in indigo.variables:
+                        return [('value', 'value')]
+                    else:
+                        return [('None', 'None')]
+                except ValueError:
+                    return [('None', 'None')]
             else:
-                return state_list_2
+                return [('None', 'None')]
 
     def deviceStateGenerator3(self, filter="", valuesDict=None, typeId="", targetId=0):
         self.debugLog(u"deviceStateGenerator3 method called.")
-        state_list_3 = []
 
         if not valuesDict:
-            return state_list_3
+            return []
 
         if valuesDict and "thing3" in valuesDict:
-            if valuesDict['thing3'] != "" and valuesDict['thing3'] != "None":
-                device_string = int(valuesDict['thing3'])
+            if valuesDict['thing3'] != "":
                 try:
-                    for devID in indigo.devices.iterkeys():
-                        if device_string == devID:
-                            for state in indigo.devices[device_string].states:
-                                # if ".ui" in state or "All" in state or "zone" in state:
-                                if any(item in state for item in (".ui", "All", "zone")):
-                                    pass
-                                else:
-                                    state_list_3.append(state)
-
-                    for varID in indigo.variables.iterkeys():
-                        if device_string == varID:
-                            var = indigo.variables[device_string].name
-                            state_list_3.append(var + u" value")
-                except Exception as error:
-                    pass
-
-                state_list_3.append("None")
-                return state_list_3
-
+                    if int(valuesDict['thing3']) in indigo.devices:
+                        dev = indigo.devices[int(valuesDict['thing3'])]
+                        return [x for x in dev.states.keys() if ".ui" not in x]
+                    elif int(valuesDict['thing3']) in indigo.variables:
+                        return [('value', 'value')]
+                    else:
+                        return [('None', 'None')]
+                except ValueError:
+                    return [('None', 'None')]
             else:
-                return state_list_3
+                return [('None', 'None')]
 
     def deviceStateGenerator4(self, filter="", valuesDict=None, typeId="", targetId=0):
         self.debugLog(u"deviceStateGenerator4 method called.")
-        state_list_4 = []
 
         if not valuesDict:
-            return state_list_4
+            return []
 
         if valuesDict and "thing4" in valuesDict:
-            if valuesDict['thing4'] != "" and valuesDict['thing4'] != "None":
-                device_string = int(valuesDict['thing4'])
+            if valuesDict['thing4'] != "":
                 try:
-                    for devID in indigo.devices.iterkeys():
-                        if device_string == devID:
-                            for state in indigo.devices[device_string].states:
-                                # if ".ui" in state or "All" in state or "zone" in state:
-                                if any(item in state for item in (".ui", "All", "zone")):
-                                    pass
-                                else:
-                                    state_list_4.append(state)
-
-                    for varID in indigo.variables.iterkeys():
-                        if device_string == varID:
-                            var = indigo.variables[device_string].name
-                            state_list_4.append(var + u" value")
-                except Exception as error:
-                    pass
-
-                state_list_4.append("None")
-                return state_list_4
-
+                    if int(valuesDict['thing4']) in indigo.devices:
+                        dev = indigo.devices[int(valuesDict['thing4'])]
+                        return [x for x in dev.states.keys() if ".ui" not in x]
+                    elif int(valuesDict['thing4']) in indigo.variables:
+                        return [('value', 'value')]
+                    else:
+                        return [('None', 'None')]
+                except ValueError:
+                    return [('None', 'None')]
             else:
-                return state_list_4
+                return [('None', 'None')]
 
     def deviceStateGenerator5(self, filter="", valuesDict=None, typeId="", targetId=0):
         self.debugLog(u"deviceStateGenerator5 method called.")
-        state_list_5 = []
 
         if not valuesDict:
-            return state_list_5
+            return []
 
         if valuesDict and "thing5" in valuesDict:
-
-            if valuesDict['thing5'] != "" and valuesDict['thing5'] != "None":
-                device_string = int(valuesDict['thing5'])
+            if valuesDict['thing5'] != "":
                 try:
-                    for devID in indigo.devices.iterkeys():
-                        if device_string == devID:
-                            for state in indigo.devices[device_string].states:
-                                # if ".ui" in state or "All" in state or "zone" in state:
-                                if any(item in state for item in (".ui", "All", "zone")):
-                                    pass
-                                else:
-                                    state_list_5.append(state)
-
-                    for varID in indigo.variables.iterkeys():
-                        if device_string == varID:
-                            var = indigo.variables[device_string].name
-                            state_list_5.append(var + u" value")
-                except Exception as error:
-                    pass
-
-                state_list_5.append("None")
-                return state_list_5
-
+                    if int(valuesDict['thing5']) in indigo.devices:
+                        dev = indigo.devices[int(valuesDict['thing5'])]
+                        return [x for x in dev.states.keys() if ".ui" not in x]
+                    elif int(valuesDict['thing5']) in indigo.variables:
+                        return [('value', 'value')]
+                    else:
+                        return [('None', 'None')]
+                except ValueError:
+                    return [('None', 'None')]
             else:
-                return state_list_5
+                return [('None', 'None')]
 
     def deviceStateGenerator6(self, filter="", valuesDict=None, typeId="", targetId=0):
         self.debugLog(u"deviceStateGenerator6 method called.")
-        state_list_6 = []
 
         if not valuesDict:
-            return state_list_6
+            return []
 
         if valuesDict and "thing6" in valuesDict:
-            if valuesDict['thing6'] != "" and valuesDict['thing6'] != "None":
-                device_string = int(valuesDict['thing6'])
+            if valuesDict['thing6'] != "":
                 try:
-                    for devID in indigo.devices.iterkeys():
-                        if device_string == devID:
-                            for state in indigo.devices[device_string].states:
-                                # if ".ui" in state or "All" in state or "zone" in state:
-                                if any(item in state for item in (".ui", "All", "zone")):
-                                    pass
-                                else:
-                                    state_list_6.append(state)
-
-                    for varID in indigo.variables.iterkeys():
-                        if device_string == varID:
-                            var = indigo.variables[device_string].name
-                            state_list_6.append(var + u" value")
-                except Exception as error:
-                    pass
-
-                state_list_6.append("None")
-                return state_list_6
-
+                    if int(valuesDict['thing6']) in indigo.devices:
+                        dev = indigo.devices[int(valuesDict['thing6'])]
+                        return [x for x in dev.states.keys() if ".ui" not in x]
+                    elif int(valuesDict['thing6']) in indigo.variables:
+                        return [('value', 'value')]
+                    else:
+                        return [('None', 'None')]
+                except ValueError:
+                    return [('None', 'None')]
             else:
-                return state_list_6
+                return [('None', 'None')]
 
     def deviceStateGenerator7(self, filter="", valuesDict=None, typeId="", targetId=0):
         self.debugLog(u"deviceStateGenerator7 method called.")
-        state_list_7 = []
 
         if not valuesDict:
-            return state_list_7
+            return []
 
         if valuesDict and "thing7" in valuesDict:
-            if valuesDict['thing7'] != "" and valuesDict['thing7'] != "None":
-                device_string = int(valuesDict['thing7'])
+            if valuesDict['thing7'] != "":
                 try:
-                    for devID in indigo.devices.iterkeys():
-                        if device_string == devID:
-                            for state in indigo.devices[device_string].states:
-                                # if ".ui" in state or "All" in state or "zone" in state:
-                                if any(item in state for item in (".ui", "All", "zone")):
-                                    pass
-                                else:
-                                    state_list_7.append(state)
-
-                    for varID in indigo.variables.iterkeys():
-                        if device_string == varID:
-                            var = indigo.variables[device_string].name
-                            state_list_7.append(var + u" value")
-                except Exception as error:
-                    pass
-
-                state_list_7.append("None")
-                return state_list_7
-
+                    if int(valuesDict['thing7']) in indigo.devices:
+                        dev = indigo.devices[int(valuesDict['thing7'])]
+                        return [x for x in dev.states.keys() if ".ui" not in x]
+                    elif int(valuesDict['thing7']) in indigo.variables:
+                        return [('value', 'value')]
+                    else:
+                        return [('None', 'None')]
+                except ValueError:
+                    return [('None', 'None')]
             else:
-                return state_list_7
+                return [('None', 'None')]
 
     def deviceStateGenerator8(self, filter="", valuesDict=None, typeId="", targetId=0):
         self.debugLog(u"deviceStateGenerator8 method called.")
-        state_list_8 = []
 
         if not valuesDict:
-            return state_list_8
+            return []
 
         if valuesDict and "thing8" in valuesDict:
-            if valuesDict['thing8'] != "" and valuesDict['thing8'] != "None":
-                device_string = int(valuesDict['thing8'])
+            if valuesDict['thing8'] != "":
                 try:
-                    for devID in indigo.devices.iterkeys():
-                        if device_string == devID:
-                            for state in indigo.devices[device_string].states:
-                                # if ".ui" in state or "All" in state or "zone" in state:
-                                if any(item in state for item in (".ui", "All", "zone")):
-                                    pass
-                                else:
-                                    state_list_8.append(state)
-
-                    for varID in indigo.variables.iterkeys():
-                        if device_string == varID:
-                            var = indigo.variables[device_string].name
-                            state_list_8.append(var + u" value")
-                except Exception as error:
-                    pass
-
-                state_list_8.append("None")
-                return state_list_8
-
+                    if int(valuesDict['thing8']) in indigo.devices:
+                        dev = indigo.devices[int(valuesDict['thing8'])]
+                        return [x for x in dev.states.keys() if ".ui" not in x]
+                    elif int(valuesDict['thing8']) in indigo.variables:
+                        return [('value', 'value')]
+                    else:
+                        return [('None', 'None')]
+                except ValueError:
+                    return [('None', 'None')]
             else:
-                return state_list_8
+                return [('None', 'None')]
 
     def encodeValueDicts(self):
 
