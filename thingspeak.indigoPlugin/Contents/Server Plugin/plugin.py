@@ -236,6 +236,26 @@ class Plugin(indigo.PluginBase):
         self.longitude      = self.pluginPrefs.get('longitude', 0)
         self.uploadInterval = int(self.pluginPrefs.get('configMenuUploadInterval', 900))
 
+    def killAllComms(self):
+        """ killAllComms() sets the enabled status of all plugin devices to
+        false. """
+
+        for dev in indigo.devices.itervalues("self"):
+            try:
+                indigo.device.enable(dev, value=False)
+            except Exception as error:
+                self.debugLog(u"Exception when trying to kill all comms. Error: {0}".format(error))
+
+    def unkillAllComms(self):
+        """ unkillAllComms() sets the enabled status of all plugin devices to
+        true. """
+
+        for dev in indigo.devices.itervalues("self"):
+            try:
+                indigo.device.enable(dev, value=True)
+            except Exception as error:
+                self.debugLog(u"Exception when trying to unkill all comms. Error: {0}".format(error))
+
     def checkDebugLogFile(self):
         """
         The checkDebugLogFile() method manages the Thingspeak Plugin

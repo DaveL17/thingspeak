@@ -1,4 +1,5 @@
 v1.0.02
+- Adds menu item to enable/disable all plugin devices.
 - Simplifies Thingspeak device configuration.
 - Moves support URL to Github.
 - Properly sets icon state to off when plugin is disabled.
