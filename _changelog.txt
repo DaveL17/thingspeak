@@ -1,3 +1,6 @@
+v1.0.03
+-
+
 v1.0.02
 - Adds menu item to enable/disable all plugin devices.
 - Simplifies Thingspeak device configuration.

@@ -62,7 +62,7 @@ __build__     = ""
 __copyright__ = 'Copyright 2017 DaveL17'
 __license__   = "MIT"
 __title__     = 'Thingspeak Plugin for Indigo Home Control'
-__version__   = '1.0.02'
+__version__   = '1.0.03'
 
 kDefaultPluginPrefs = {
     u'configMenuTimeoutInterval': 15,            # How long to wait on a server timeout.
