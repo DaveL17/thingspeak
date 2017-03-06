@@ -59,39 +59,45 @@
 
 <h3>Devices</h3>
 <img class="TextWrap" src="img/img_deviceConfigDialog.png">
-<p>Thingspeak Plugin Devices are where most of the magic happens. Users begin by creating a new device within Indigo. There is only one device model available—Thingspeak
-    Data Upload Device—and each device requires an API Write Key which is obtained from the user’s Thingspeak account. Each Thingspeak channel has its own API Write Key.
-    Each Thingspeak Device can contain up to 8 data elements for upload (a limitation imposed by Thingspeak, not by the plugin.) Data elements are added in the following
-    few steps:
+<p>Thingspeak Plugin Devices are where most of the magic happens. Begin by creating a new Thingspeak device within Indigo. There is only one device model available—Thingspeak
+    Data Upload Device—and each device requires an API Write Key which is obtained from your Thingspeak account. Each Thingspeak channel has its own API Write Key.
+    Each Thingspeak Device can contain up to 8 data elements for upload (a limitation imposed by Thingspeak, not by the plugin); however, you can create as many Thingspeak Data Upload
+    devices as you wish. Data elements are added in the following few steps within the device configuration menu (depending on how many devices and variables that you have, it may take
+    a while to load the configuration dialog as the plugin builds a list of available things to upload):
 <ol>
-    <li>Enter the corresponding API Write key in the appropriate box (you obtain these from Thingspeak.)</li>
+    <li>Enter the corresponding API Write key in the appropriate box (obtain your keys directly from Thingspeak.)</li>
     <br>
     <li>For the first “Thing” to be tracked, select the drop-down box to select the corresponding Indigo Device or Indigo Variable that you would like to track. Indigo
-        Devices are preceded by (D) and Variables are preceded by a (V).
+        Devices are preceded by (D) and Variables are preceded by a (V). It will take a moment for the the Value to Chart dropdown list to populate.
     </li>
     <br>
-    <li>Tic the “Show Settings” checkbox, and click the “Refresh” button. This will load all corresponding device states for Indigo Devices or a Variable value option
-        that you have just selected. Select the data appropriate element that you want to track.
+    <li>Select the data appropriate element that you want to track.
     </li>
     <br>
     <li>Proceed on to the next “Thing” or click Save.</li>
 </ol>
 <p>When you’re done adding Things, give your new Thingspeak device a name and then exit the Edit Device dialog box.</p>
-<p>After the plugin has had a chance to cycle and upload your data, several custom device states will be populated with select information. The data that appears in the
-    custom device states is based on the communication with the Thingspeak servers and represents the data that Thingspeak received from you. In other words, this is the
-    information as in appears on the Thingspeak servers. The data include the channel ID, the timestamp of the record, and the entry ID. Note that although status appears
-    in the custom device states window, it is not presently supported by the plugin.</p>
+<p>After the plugin has had a chance to cycle and upload your data, several custom device states will be populated with select information. The data that appears in the custom device
+    states is based on the communication with the Thingspeak servers and represents the data that Thingspeak received from you. In other words, this is the information as in appears on
+    the Thingspeak servers. The data include the channel ID, the timestamp of the record, and the entry ID. Note that although status appears in the custom device states window, it is
+    not presently supported by the plugin.</p>
 
+<br style="clear:both"/>
 <h3>Actions</h3>
-<p>There is one Indigo Action Item to request an upload of data on request. This option can be used as a part of an Indigo Trigger like: “If X happens, upload my data now.”</p>
+<p>There is one Indigo Action Item to request an upload of data on request--Upload Thingspeak Data. This option can be used as a part of an Indigo Trigger like: “If X happens, upload my
+    data.”</p>
 <ul>
     <li>Upload Data Now</li>
 </ul>
+
 
 <h3>Menu Items</h3>
 <img class="TextWrap" src="img/img_pluginMenuItems.png">
 <p>There are three custom menu items for the Thingspeak plugin:
 <ul>
+    <li><span>&nbsp;Enable/Disable All Devices&nbsp;</span> — These two menus items can be used to quickly enable (or disable) all Thingspeak plugin devices.
+    </li>
+    <br>
     <li><span>&nbsp;Check for Plugin Updates&nbsp;</span> — Selecting this option will test whether there is an available update to the Thingspeak plugin. This option doesn’t require
         you to have an email account configured in Indigo (it will notify you in the Indigo log instead.)
     </li>
@@ -104,6 +110,7 @@
         this option will turn it off (and vice versa.)
     </li>
 </ul>
+<br style="clear:both"/>
 
 <h3>Framework</h3>
 <p>The framework of the entire environment as it relates to Indigo is very straightforward. Indigo talks through the plugin to the Thingspeak servers to allow users to
