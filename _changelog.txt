@@ -1,5 +1,13 @@
 v1.0.03
--
+- Adds Twitter integration.
+- Improved speed.
+- Adds more information for plugin validation checks.
+- Adds more information about state of data uploads.
+- Adds ability to customize where the plugin log is stored.
+- Error trapping refinements.
+- UI refinements.
+- Code refinements.
+- Stylistic changes to Indigo Plugin Update Checker module.
 
 v1.0.02
 - Adds menu item to enable/disable all plugin devices.

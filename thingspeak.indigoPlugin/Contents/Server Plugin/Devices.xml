@@ -22,6 +22,12 @@
             <Field id="deviceIP" type="textfield" defaultValue="XXX.XXX.XXX.XXX:XXXX" visibleBindingId="devicePort" visibleBindingValue="true">
                 <Label>Server IP:</Label>
             </Field>
+            <Field id="tweet" type="textfield" defaultValue="">
+                <Label>Tweet:</Label>
+            </Field>
+            <Field id="tweetLabel" type="label" alignWithControl="true" fontSize="small">
+                <Label>Tweet will be posted if you have a linked Twitter username set in the plugin's main preferences.</Label>
+            </Field>
             <Field id="space1" type="label">
                 <Label/>
             </Field>
@@ -204,16 +210,16 @@
                 <TriggerLabel>Thingspeak Thing 8</TriggerLabel>
                 <ControlPageLabel>Thingspeak Thing 8</ControlPageLabel>
             </State>
-            <State id="tweet">
-                <ValueType>String</ValueType>
-                <TriggerLabel>Thingspeak Tweet</TriggerLabel>
-                <ControlPageLabel>Thingspeak Tweet</ControlPageLabel>
-            </State>
-            <State id="twitter">
-                <ValueType>String</ValueType>
-                <TriggerLabel>Twitter Username</TriggerLabel>
-                <ControlPageLabel>Twitter Username</ControlPageLabel>
-            </State>
+            <!--<State id="tweet">-->
+                <!--<ValueType>String</ValueType>-->
+                <!--<TriggerLabel>Thingspeak Tweet</TriggerLabel>-->
+                <!--<ControlPageLabel>Thingspeak Tweet</ControlPageLabel>-->
+            <!--</State>-->
+            <!--<State id="twitter">-->
+                <!--<ValueType>String</ValueType>-->
+                <!--<TriggerLabel>Twitter Username</TriggerLabel>-->
+                <!--<ControlPageLabel>Twitter Username</ControlPageLabel>-->
+            <!--</State>-->
         </States>
 
         <UiDisplayStateId>thingState</UiDisplayStateId>

@@ -14,7 +14,7 @@
     </Field>
     <Field id="separator0" type="separator"/>
     <Field id="configMenuUploadInterval" type="menu" defaultValue="900" tooltip="How frequently would you would like to upload data to Thingspeak?">
-        <Label>Upload interval:</Label>
+        <Label>Interval:</Label>
         <List>
             <Option value="15">15 Seconds</Option>
             <Option value="30">30 Seconds</Option>
@@ -26,16 +26,19 @@
             <Option value="86400">1 Day</Option>
         </List>
     </Field>
+    <Field id="uploadIntervalLabel" type="label" alignWithControl="true" fontSize="small">
+        <Label>This setting controls how frequently the plugin will upload data to the Thingspeak servers.</Label>
+    </Field>
     <Field id="space2" type="label">
         <Label/>
     </Field>
     <Field id="space3" type="label" alignText="right">
-        <Label>Location Settings (optional):</Label>
+        <Label>Optional Settings:</Label>
     </Field>
     <Field id="separator1" type="separator"/>
     <Field id="showLocationSettings" type="checkbox" defaultValue="false">
         <Label/>
-        <Description>Show location settings</Description>
+        <Description>Show optional settings</Description>
     </Field>
     <Field id="latitude" type="textfield" defaultValue="0" visibleBindingId="showLocationSettings" visibleBindingValue="true"
            tooltip="Please enter the latitude of your Indigo Server in degrees (decimal).">
@@ -48,6 +51,13 @@
     <Field id="elevation" type="textfield" defaultValue="0" visibleBindingId="showLocationSettings" visibleBindingValue="true"
            tooltip="Please enter the elevation of your Indigo Server in whole meters (integer).">
         <Label>Elevation:</Label>
+    </Field>
+    <Field id="twitter" type="textfield" defaultValue="" visibleBindingId="showLocationSettings" visibleBindingValue="true"
+           tooltip="Please enter a username linked to ThingTweet.">
+        <Label>Twitter ID:</Label>
+    </Field>
+    <Field id="locationSettingsLabel" type="label" alignWithControl="true" fontSize="small" visibleBindingId="showLocationSettings" visibleBindingValue="true">
+        <Label>These data apply to all Thingspeak devices. All are optional. Twitter will only work if you have linked your username via ThingTweet. See Thingspeak Apps for more details.</Label>
     </Field>
     <Field id="space4" type="label">
         <Label/>
@@ -64,6 +74,9 @@
            tooltip="Please enter the email address to receive notifications of updates to the Thingspeak plugin.">
         <Label>Email address:</Label>
     </Field>
+    <Field id="updateNotificationLabel" type="label" alignWithControl="true" fontSize="small" visibleBindingId="updaterEmailsEnabled" visibleBindingValue="true">
+        <Label>Enter an email address if you would like to be notified of updates to the plugin. This is optional.</Label>
+    </Field>
     <Field id="space6" type="label">
         <Label/>
     </Field>
@@ -71,6 +84,10 @@
         <Label>Debug Settings:</Label>
     </Field>
     <Field id="separator3" type="separator"/>
+    <Field id="logFileLocation" type="textfield" defaultValue="/Library/Application Support/Perceptive Automation/Indigo 7/Logs/Thingspeak Log.txt"
+           tooltip="Please enter the location where log files should be stored (full path and filename).">
+        <Label>Log File Path:</Label>
+    </Field>
     <Field id="showDebugInfo" type="checkbox" defaultValue="false">
         <Label/>
         <Description>Enable debug logging</Description>
