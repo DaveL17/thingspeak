@@ -9,25 +9,24 @@
     <Field id="space0" type="label">
         <Label/>
     </Field>
-    <Field id="space1" type="label" alignText="right">
-        <Label>Upload Settings:</Label>
-    </Field>
     <Field id="separator0" type="separator"/>
-    <Field id="configMenuUploadInterval" type="menu" defaultValue="900" tooltip="How frequently would you would like to upload data to Thingspeak?">
-        <Label>Interval:</Label>
-        <List>
-            <Option value="15">15 Seconds</Option>
-            <Option value="30">30 Seconds</Option>
-            <Option value="60">1 Minute</Option>
-            <Option value="120">2 Minutes</Option>
-            <Option value="300">5 Minutes</Option>
-            <Option value="900">15 Minutes</Option>
-            <Option value="3600">1 Hour</Option>
-            <Option value="86400">1 Day</Option>
-        </List>
+    <Field id="apiKey" type="textfield" defaultValue=""
+           tooltip="Please enter your Thingspeak API Key (user key not your chann.">
+        <Label>API Key:</Label>
     </Field>
-    <Field id="uploadIntervalLabel" type="label" alignWithControl="true" fontSize="small">
-        <Label>This setting controls how frequently the plugin will upload data to the Thingspeak servers.</Label>
+    <Field id="logFileLocation" type="textfield" defaultValue="/Library/Application Support/Perceptive Automation/Indigo 7/Logs/Thingspeak Log.txt"
+           tooltip="Please enter the location where log files should be stored (full path and filename).">
+        <Label>Log File Path:</Label>
+    </Field>
+    <Field id="devicePort" type="checkbox" defaultValue="false">
+        <Label>Local Server:</Label>
+        <Description fontSize="small">Check only if you are running a local Thingspeak server.</Description>
+    </Field>
+    <Field id="devicePortHelp" type="label" visibleBindingId="devicePort" visibleBindingValue="true">
+        <Label>Please enter the IP address including the port number (default is port 3000.)</Label>
+    </Field>
+    <Field id="deviceIP" type="textfield" defaultValue="XXX.XXX.XXX.XXX:3000" visibleBindingId="devicePort" visibleBindingValue="true">
+        <Label>Server IP:</Label>
     </Field>
     <Field id="space2" type="label">
         <Label/>
@@ -36,28 +35,24 @@
         <Label>Optional Settings:</Label>
     </Field>
     <Field id="separator1" type="separator"/>
-    <Field id="showLocationSettings" type="checkbox" defaultValue="false">
-        <Label/>
-        <Description>Show optional settings</Description>
+    <Field id="locationSettingsLabel" type="label" alignWithControl="true" fontSize="small">
+        <Label>These optional settings apply to all Thingspeak devices. Twitter will only work if you have linked your username via ThingTweet. See Thingspeak Apps on the Thingspeak website for more details.</Label>
     </Field>
-    <Field id="latitude" type="textfield" defaultValue="0" visibleBindingId="showLocationSettings" visibleBindingValue="true"
+    <Field id="latitude" type="textfield" defaultValue="0"
            tooltip="Please enter the latitude of your Indigo Server in degrees (decimal).">
         <Label>Latitude:</Label>
     </Field>
-    <Field id="longitude" type="textfield" defaultValue="0" visibleBindingId="showLocationSettings" visibleBindingValue="true"
+    <Field id="longitude" type="textfield" defaultValue="0"
            tooltip="Please enter the longitude of your Indigo Server in degrees (decimal).">
         <Label>Longitude:</Label>
     </Field>
-    <Field id="elevation" type="textfield" defaultValue="0" visibleBindingId="showLocationSettings" visibleBindingValue="true"
+    <Field id="elevation" type="textfield" defaultValue="0"
            tooltip="Please enter the elevation of your Indigo Server in whole meters (integer).">
         <Label>Elevation:</Label>
     </Field>
-    <Field id="twitter" type="textfield" defaultValue="" visibleBindingId="showLocationSettings" visibleBindingValue="true"
+    <Field id="twitter" type="textfield" defaultValue=""
            tooltip="Please enter a username linked to ThingTweet.">
         <Label>Twitter ID:</Label>
-    </Field>
-    <Field id="locationSettingsLabel" type="label" alignWithControl="true" fontSize="small" visibleBindingId="showLocationSettings" visibleBindingValue="true">
-        <Label>These data apply to all Thingspeak devices. All are optional. Twitter will only work if you have linked your username via ThingTweet. See Thingspeak Apps for more details.</Label>
     </Field>
     <Field id="space4" type="label">
         <Label/>
@@ -75,7 +70,7 @@
         <Label>Email address:</Label>
     </Field>
     <Field id="updateNotificationLabel" type="label" alignWithControl="true" fontSize="small" visibleBindingId="updaterEmailsEnabled" visibleBindingValue="true">
-        <Label>Enter an email address if you would like to be notified of updates to the plugin. This is optional.</Label>
+        <Label>Enter an email address if you would like to be notified of updates to the plugin. This is optional. Unticking the checkbox will disable notifications.</Label>
     </Field>
     <Field id="space6" type="label">
         <Label/>
@@ -84,10 +79,6 @@
         <Label>Debug Settings:</Label>
     </Field>
     <Field id="separator3" type="separator"/>
-    <Field id="logFileLocation" type="textfield" defaultValue="/Library/Application Support/Perceptive Automation/Indigo 7/Logs/Thingspeak Log.txt"
-           tooltip="Please enter the location where log files should be stored (full path and filename).">
-        <Label>Log File Path:</Label>
-    </Field>
     <Field id="showDebugInfo" type="checkbox" defaultValue="false">
         <Label/>
         <Description>Enable debug logging</Description>
@@ -102,7 +93,7 @@
         </List>
     </Field>
     <Field id="space8" type="label" visibleBindingId="showDebugInfo" visibleBindingValue="true" fontSize="small">
-        <Label>Turn on debugging only when needed. Be careful when posting the output to the forums or other public places as it could expose sensitive information.
+        <Label>Turn on debugging only when needed. Be careful when posting the output to the forums or other public places as it could expose sensitive information. Unticking the checkbox will disable debug logging.
 
             Low=Minimal debugging.
             Medium=All debug logging except sensitive information.

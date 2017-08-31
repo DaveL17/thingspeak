@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.5
+#!/usr/bin/env python2.6
 # -*- coding: utf-8 -*-
 
 """
@@ -24,19 +24,14 @@ and the plugin tries to adjust variable values as needed to make them
 compatible (i.e., converting a string to a float.
 """
 
-# TODO: Provide a menu item to pull down information FROM Thingspeak??
-# TODO: Allow devices to control their own individual upload intervals (now a feature request)
-# TODO: Device configuration validation to ensure that API write key is unique.
-
-# TODO: Channel Update API - Status Message
+# TODO:
 
 import datetime as dt
 import os.path
-import simplejson
-import subprocess
+import pydevd
+import requests
 import sys
 import time as t
-import urllib  # Use to encode the URL parameters.
 import indigoPluginUpdateChecker
 
 try:
@@ -49,11 +44,10 @@ __build__     = ""
 __copyright__ = 'Copyright 2017 DaveL17'
 __license__   = "MIT"
 __title__     = 'Thingspeak Plugin for Indigo Home Control'
-__version__   = '1.0.03'
+__version__   = '1.1.01'
 
 kDefaultPluginPrefs = {
     u'configMenuTimeoutInterval': 15,            # How long to wait on a server timeout.
-    u'configMenuUploadInterval' : 900,           # How long to wait before refreshing devices.
     u'elevation'                : 0,             # Elevation of data source.
     u'latitude'                 : 0,             # Latitude of data source.
     u'logFileDate'              : "1970-01-01",  # Log file creation date.
@@ -65,8 +59,10 @@ kDefaultPluginPrefs = {
     u'updaterEmailsEnabled'     : False,         # Notification of plugin updates wanted.
     }
 
+
 class Plugin(indigo.PluginBase):
     def __init__(self, pluginId, pluginDisplayName, pluginVersion, pluginPrefs):
+
         indigo.PluginBase.__init__(self, pluginId, pluginDisplayName, pluginVersion, pluginPrefs)
 
         indigo.server.log(u"")
@@ -80,25 +76,11 @@ class Plugin(indigo.PluginBase):
 
         self.debug          = pluginPrefs['showDebugInfo']
         self.debugLevel     = pluginPrefs['showDebugLevel']
-        self.elevation      = pluginPrefs['elevation']
-        self.latitude       = pluginPrefs['latitude']
-        self.logFileDate    = self.pluginPrefs.get('logFileDate', "1970-01-01")
+        self.devicesAndVariablesList = []
+        self.logFileDate    = pluginPrefs.get('logFileDate', "1970-01-01")
         self.logFile        = pluginPrefs['logFileLocation']
-        self.longitude      = pluginPrefs['longitude']
-        self.twitter        = pluginPrefs['twitter']
-        self.uploadInterval = int(pluginPrefs['configMenuUploadInterval'])
         updater_url         = "https://davel17.github.io/thingspeak/thingspeak_version.html"
         self.updater        = indigoPluginUpdateChecker.updateChecker(self, updater_url)
-
-        # Convert old debugLevel scale to new scale.
-        # =============================================================
-        if not 0 < self.pluginPrefs['showDebugLevel'] <= 3:
-            if self.pluginPrefs['showDebugLevel'] == "High":
-                self.pluginPrefs['showDebugLevel'] = 3
-            elif self.pluginPrefs['showDebugLevel'] == "Medium":
-                self.pluginPrefs['showDebugLevel'] = 2
-            else:
-                self.pluginPrefs['showDebugLevel'] = 1
 
         # Create the log file location if it doesn't exist.
         split_path = os.path.split(pluginPrefs['logFileLocation'])
@@ -109,11 +91,85 @@ class Plugin(indigo.PluginBase):
         # pydevd.settrace('localhost', port=5678, stdoutToServer=True, stderrToServer=True, suspend=False)  # To enable remote PyCharm Debugging, uncomment this line.
 
     def __del__(self):
+
         indigo.PluginBase.__del__(self)
 
+    # Indigo Methods ==========================================================
+
+    def closedPrefsConfigUi(self, valuesDict, userCancelled):
+
+        self.debugLog(u"closedPrefsConfigUi(self, valuesDict, userCancelled) called.")
+
+        if userCancelled:
+            self.debugLog(u"User prefs dialog cancelled.")
+
+        if not userCancelled:
+            self.debug = valuesDict.get('showDebugInfo', False)
+            self.debugLog(u"User prefs saved.")
+            if self.pluginPrefs['showDebugLevel'] >= 3:
+                self.debugLog(unicode(valuesDict))
+
+            if self.debug:
+                indigo.server.log(u"Debug logging is on.")
+                if self.debugLevel >= 3:
+                    self.debugLog(u"Warning! Debug set to high. Sensitive information will be sent to the Indigo log.")
+
+        # Update update select globals if plugin prefs have changed.
+        self.debugLevel     = self.pluginPrefs.get('showDebugLevel', 1)
+
+    def deviceStartComm(self, dev):
+
+        self.debugLog(u"deviceStartComm(self, dev) called. Device: {0}".format(dev.name))
+        dev.stateListOrDisplayStateIdChanged()
+        dev.updateStateOnServer('thingState', value=False, uiValue=u"enabled")
+        dev.updateStateImageOnServer(indigo.kStateImageSel.SensorOff)
+
+    def deviceStopComm(self, dev):
+
+        self.debugLog(u"deviceStopComm(self, dev) called. Device: {0}".format(dev.name))
+        dev.updateStateOnServer('thingState', value=False, uiValue=u"disabled")
+        dev.updateStateImageOnServer(indigo.kStateImageSel.SensorOff)
+
+    def getDeviceConfigUiValues(self, valuesDict, typeId, devId):
+
+        self.debugLog(u"getDeviceConfigUiValues(self, valuesDict, typeId, devId) called.")
+
+        self.devicesAndVariablesList = []
+        [self.devicesAndVariablesList.append((dev.id, u"(D) {0}".format(dev.name))) for dev in indigo.devices]
+        [self.devicesAndVariablesList.append((var.id, u"(V) {0}".format(var.name))) for var in indigo.variables]
+        self.devicesAndVariablesList.append(('None', 'None'))
+
+        return valuesDict
+
+    # def getMenuActionConfigUiValues(self, menuId):
+    #     """"""
+    #     self.debugLog(u"getMenuActionConfigUiValues(self, menuId) called.")
+    #
+    #     valuesDict = indigo.Dict()
+    #
+    #     return valuesDict
+
+    def runConcurrentThread(self):
+
+        self.debugLog(u"runConcurrentThread() initiated.")
+
+        try:
+            while True:
+                # self.sleep(1)
+                self.updater.checkVersionPoll()
+                self.checkDebugLogFile()
+                self.encodeValueDicts()
+
+                # We check every 2 seconds to see if any devices need updating.
+                self.sleep(2)
+
+        except self.StopThread:
+            self.debugLog(u"Thingspeak stop thread called.")
+            pass
+
     def startup(self):
-        """"""
-        self.debugLog(u"Thingspeak startup() method called.")
+
+        self.debugLog(u"startup(self) method called.")
 
         if self.debug and self.debugLevel >= 3:
             self.debugLog(u"Warning! Debug set to high. Sensitive information will be sent to the Indigo log.")
@@ -121,49 +177,27 @@ class Plugin(indigo.PluginBase):
         self.updater.checkVersionPoll()  # See if there is an update and whether the user wants to be notified.
 
     def shutdown(self):
-        """"""
-        self.debugLog(u"Thingspeak shutdown() method called.")  # Do any cleanup necessary before exiting
+
+        self.debugLog(u"shutdown(self) method called.")
 
         for dev in indigo.devices.iter('self'):
             dev.updateStateImageOnServer(indigo.kStateImageSel.SensorOff)
 
-    def deviceStartComm(self, dev):
-        """"""
-        self.debugLog(u"deviceStartComm() method called. Starting Thingspeak device: {0}".format(dev.name))
-        dev.stateListOrDisplayStateIdChanged()
-        dev.updateStateOnServer('thingState', value=False, uiValue=u"enabled")
-        dev.updateStateImageOnServer(indigo.kStateImageSel.SensorOff)
-
-    def deviceStopComm(self, dev):
-        """"""
-        self.debugLog(u"deviceStopComm() method called. Stopping Thingspeak device: {0}".format(dev.name))
-        dev.updateStateOnServer('thingState', value=False, uiValue=u"disabled")
-        dev.updateStateImageOnServer(indigo.kStateImageSel.SensorOff)
-
-    def toggleDebugEnabled(self):
-        """Toggle debug on/off."""
-
-        self.debugLog(u"toggleDebugEnabled() method called.")
-        if not self.debug:
-            self.debug = True
-            self.pluginPrefs['showDebugInfo'] = True
-            indigo.server.log(u"Debugging on.")
-            self.debugLog(u"Debug level: {0}".format(self.debugLevel))
-            if self.debugLevel >= 3:
-                self.debugLog(u"Warning! Debug set to high. Sensitive information will be sent to the Indigo log.")
-
-        else:
-            self.debug = False
-            self.pluginPrefs['showDebugInfo'] = False
-            indigo.server.log(u"Debugging off.")
-
     def validatePrefsConfigUi(self, valuesDict):
-        """"""
-        self.debugLog(u"validatePrefsConfigUi() method called.")
+
+        self.debugLog(u"validatePrefsConfigUi(self, valuesDict) called.")
 
         error_msg_dict = indigo.Dict()
 
         try:
+            try:
+                if len(valuesDict['apiKey']) not in (0, 16):
+                    raise Exception
+            except Exception:
+                error_msg_dict['apiKey'] = u"The API Key must be 16 characters long."
+                error_msg_dict['showAlertText'] = u"API Key Error:\n\nThe API Key must be 16 characters long and cannot contain spaces."
+                return False, valuesDict, error_msg_dict
+
             # Test latitude and longitude. Must be integers or floats. Can be negative.
             try:
                 float(valuesDict['latitude'])
@@ -229,51 +263,215 @@ class Plugin(indigo.PluginBase):
 
         return True, valuesDict
 
-    def closedPrefsConfigUi(self, valuesDict, userCancelled):
-        """"""
-        self.debugLog(u"closedPrefsConfigUi() method called.")
+    # Plugin Methods ==========================================================
 
-        if userCancelled:
-            self.debugLog(u"User prefs dialog cancelled.")
+    def channelListGenerator(self, filter="", valuesDict=None, typeId="", targetId=0):
+        """ The channelListGenerator(self, filter="", valuesDict=None,
+        typeId="", targetId=0) method generates a list of channel names and IDs
+        which are used to identify the target channel. The list returned is
+        [(channel_id, channel_name), (channel_id, channel_name)] """
 
-        if not userCancelled:
-            self.debug = valuesDict.get('showDebugInfo', False)
-            self.debugLog(u"User prefs saved.")
-            if self.pluginPrefs['showDebugLevel'] >= 3:
-                self.debugLog(unicode(valuesDict))
+        self.debugLog(u'channelListGenerator(self, filter="", valuesDict=None, typeId="", targetId=0) called.')
 
-            if self.debug:
-                indigo.server.log(u"Debug logging is on.")
-                if self.debugLevel >= 3:
-                    self.debugLog(u"Warning! Debug set to high. Sensitive information will be sent to the Indigo log.")
+        channel_list = []
 
-        # Update update select globals if plugin prefs have changed.
-        self.debugLevel     = self.pluginPrefs.get('showDebugLevel', 1)
-        self.elevation      = self.pluginPrefs.get('elevation', 0)
-        self.latitude       = self.pluginPrefs.get('latitude', 0)
-        self.longitude      = self.pluginPrefs.get('longitude', 0)
-        self.twitter        = self.pluginPrefs.get('twitter', "")
-        self.uploadInterval = int(self.pluginPrefs.get('configMenuUploadInterval', 900))
+        url = "/channels.json"
+        parms = {'api_key': self.pluginPrefs.get('apiKey', '')}
 
-    def killAllComms(self):
-        """ killAllComms() sets the enabled status of all plugin devices to
-        false. """
+        response, response_dict = self.sendToThingspeak('get', url, parms)
 
-        for dev in indigo.devices.itervalues("self"):
-            try:
-                indigo.device.enable(dev, value=False)
-            except Exception as error:
-                self.debugLog(u"Exception when trying to kill all comms. Error: {0}".format(error))
+        for thing in response_dict:
+            channel_list.append((thing['id'], thing['name']))
 
-    def unkillAllComms(self):
-        """ unkillAllComms() sets the enabled status of all plugin devices to
-        true. """
+        return channel_list
 
-        for dev in indigo.devices.itervalues("self"):
-            try:
-                indigo.device.enable(dev, value=True)
-            except Exception as error:
-                self.debugLog(u"Exception when trying to unkill all comms. Error: {0}".format(error))
+    def channelClearFeed(self, valuesDict, typeId):
+        """ The channelClearFeed(self, valuesDict, typeId) method is called
+        when a user selects 'Clear Channel Data' from the plugin menu. It is
+        used to clear all data from the channel (the channel remains intact.
+        """
+
+        self.debugLog(u'channelClearFeed(self, valuesDict, typeId) called.')
+
+        url = "/channels/{0}/feeds.xml".format(valuesDict['channelList'])
+        parms = {'api_key': self.pluginPrefs.get('apiKey', '')}
+
+        response, response_dict = self.sendToThingspeak('delete', url, parms)
+        indigo.server.log(u"Response: {0}".format(response))
+        indigo.server.log(u"Response Dict: {0}".format(response_dict))
+
+        return True
+
+    def channelDelete(self, valuesDict, typeId):
+        """ The channelDelete(self, valuesDict, typeId) method is called when
+        a user selects 'Delete a Channel' from the plugin menu. It is used to
+        delete a channel from Thingspeak. """
+
+        self.debugLog(u'channelDelete(self, valuesDict, typeId)')
+
+        url = "/channels/{0}.xml".format(valuesDict['channelList'])
+        parms = {'api_key': self.pluginPrefs.get('apiKey', '')}
+
+        response, response_dict = self.sendToThingspeak('delete', url, parms)
+        indigo.server.log(u"Response: {0}".format(response))
+        indigo.server.log(u"Response Dict: {0}".format(response_dict))
+
+        return True
+
+    def channelCreate(self, valuesDict, typeId):
+        """ The channelCreate(self, valuesDict, typeId) method is called when
+        a user selects 'Create a Channel' from the plugin menu. It is used to
+        create a new channel on Thingspeak. """
+
+        self.debugLog(u'channelCreate(self, valuesDict, typeId)')
+
+        url = "/channels.json"
+
+        parms = {'api_key':     self.pluginPrefs.get('apiKey', ''),    # User's API key. This is different from a channel API key, and can be found in your profile page. (required).
+                 'elevation':   self.pluginPrefs.get('elevation', 0),  # Elevation in meters (optional)
+                 'latitude':    self.pluginPrefs.get('latitude', 0),   # Latitude in degrees (optional)
+                 'longitude':   self.pluginPrefs.get('longitude', 0),  # Longitude in degrees (optional)
+                 'description': valuesDict['description'],             # Description of the channel (optional)
+                 'field1':      valuesDict['field1'],                  # Field 1 name (optional)
+                 'field2':      valuesDict['field2'],                  # Field 2 name (optional)
+                 'field3':      valuesDict['field3'],                  # Field 3 name (optional)
+                 'field4':      valuesDict['field4'],                  # Field 4 name (optional)
+                 'field5':      valuesDict['field5'],                  # Field 5 name (optional)
+                 'field6':      valuesDict['field6'],                  # Field 6 name (optional)
+                 'field7':      valuesDict['field7'],                  # Field 7 name (optional)
+                 'field8':      valuesDict['field8'],                  # Field 8 name (optional)
+                 'metadata':    valuesDict['metadata'],                # Metadata for the channel, which can include JSON, XML, or any other data (optional)
+                 'name':        valuesDict['name'],                    # Name of the channel (optional)
+                 'public_flag': valuesDict['public_flag'],             # Whether the channel is public, default false (optional)
+                 'tags':        valuesDict['tags'],                    # Comma-separated list of tags (optional)
+                 'url':         valuesDict['url'],                     # Web page URL for the channel (optional)
+                 }
+
+        response, response_dict = self.sendToThingspeak('post', url, parms)
+
+        if response == 200:
+            indigo.server.log(u"{0:=^50}".format(" Create Channel Success "))
+            indigo.server.log(u"Thingspeak channel \"{0}\" created.".format(response_dict.get('name', "Not returned.")))
+            indigo.server.log(u"Created at: {0}".format(response_dict.get('created_at', "Not returned.")))
+            indigo.server.log(u"API Key(s): {0}".format(response_dict.get('api_keys', "Not returned.")))
+            indigo.server.log(u"ID: {0}".format(response_dict.get('id', "Not returned.")))
+            indigo.server.log(u"Description: {0}".format(response_dict.get('description', "Not returned.")))
+            indigo.server.log(u"Elevation: {0}".format(response_dict.get('elevation', "Not returned.")))
+            indigo.server.log(u"Latitude: {0}".format(response_dict.get('latitude', "Not returned.")))
+            indigo.server.log(u"License ID: {0}".format(response_dict.get('license_id', "Not returned.")))
+            indigo.server.log(u"Longitude: {0}".format(response_dict.get('longitude', "Not returned.")))
+            indigo.server.log(u"Metadata: {0}".format(response_dict.get('metadata', "Not returned.")))
+            indigo.server.log(u"Public: {0}".format(response_dict.get('public_flag', "Not returned.")))
+            indigo.server.log(u"Ranking: {0}".format(response_dict.get('ranking', "Not returned.")))
+            indigo.server.log(u"Tags: {0}".format(response_dict.get('tags', "Not returned.")))
+
+            return True
+
+        else:
+            return False, valuesDict
+
+    def channelList(self):
+        """ The channelList(self) method is called when a user selects 'List
+        Channels' from the plugin menu. It is used to print a table of select
+        channel information to the Indigo Events log. """
+
+        self.debugLog(u'channelList(self)')
+
+        url = "/channels.json"
+        parms = {'api_key': self.pluginPrefs.get('apiKey', '')}
+
+        response, response_dict = self.sendToThingspeak('get', url, parms)
+
+        if response == 200:
+            indigo.server.log(u"{0:<8}{1:<25}{2:^9}{3:<21}{4:^10}{5:<18}".format('ID', 'Name', 'Public', 'Created At', 'Ranking', 'Write Key'))
+            indigo.server.log(u"{0:=^100}".format(""))
+            for thing in response_dict:
+                for key in thing['api_keys']:
+                    if key['write_flag']:
+                        write_key = key['api_key']
+                indigo.server.log(u"{0:<8}{1:<25}{2:^9}{3:<21}{4:^10}{5:<18}".format(thing['id'], thing['name'], thing['public_flag'], thing['created_at'], thing['ranking'], write_key))
+
+            return True
+
+        else:
+            return False
+
+    def channelUpdate(self, valuesDict, typeId):
+        """ The channelUpdate(self, valuesDict, typeId) method is called when
+        a user selects 'Update a Channel' from the plugin menu. It is used to
+        make changes to channel settings. """
+
+        self.debugLog(u"channelUpdate(self, valuesDict, typeId) called.")
+        url = "/channels/{0}.json".format(valuesDict['channelList'])
+
+        # Validation
+        if not valuesDict['channelList']:
+            error_msg_dict = indigo.Dict()
+            error_msg_dict['channelList'] = u"Please select a channel to update."
+            error_msg_dict['showAlertText'] = u"Update Channel Info Error:\n\nYou must select a channel to update."
+            return False, valuesDict, error_msg_dict
+
+        # Thingspeak requires a string representation of the boolean value.
+        if valuesDict['public_flag']:
+            public_flag = 'true'
+        else:
+            public_flag = 'false'
+
+        parms = {'api_key':     self.pluginPrefs.get('apiKey', ''),    # User's API key. This is different from a channel API key, and can be found in your profile page. (required).
+                 'elevation':   self.pluginPrefs.get('elevation', 0),  # Elevation in meters (optional)
+                 'latitude':    self.pluginPrefs.get('latitude', 0),   # Latitude in degrees (optional)
+                 'longitude':   self.pluginPrefs.get('longitude', 0),  # Longitude in degrees (optional)
+                 'description': valuesDict['description'],             # Description of the channel (optional)
+                 'field1':      valuesDict['field1'],                  # Field 1 name (optional)
+                 'field2':      valuesDict['field2'],                  # Field 2 name (optional)
+                 'field3':      valuesDict['field3'],                  # Field 3 name (optional)
+                 'field4':      valuesDict['field4'],                  # Field 4 name (optional)
+                 'field5':      valuesDict['field5'],                  # Field 5 name (optional)
+                 'field6':      valuesDict['field6'],                  # Field 6 name (optional)
+                 'field7':      valuesDict['field7'],                  # Field 7 name (optional)
+                 'field8':      valuesDict['field8'],                  # Field 8 name (optional)
+                 'metadata':    valuesDict['metadata'],                # Metadata for the channel, which can include JSON, XML, or any other data (optional)
+                 'name':        valuesDict['name'],                    # Name of the channel (optional)
+                 'public_flag': public_flag,                           # Whether the channel is public, default false (optional)
+                 'tags':        valuesDict['tags'],                    # Comma-separated list of tags (optional)
+                 'url':         valuesDict['url'],                     # Web page URL for the channel (optional)
+                 }
+
+        # Get rid of empty key/value pairs so we don't overwrite existing information.
+        for key in parms.keys():
+            if parms[key] == "":
+                del parms[key]
+
+        response, response_dict = self.sendToThingspeak('put', url, parms)
+
+        if response == 200:
+            indigo.server.log(u"{0:=^50}".format(" Channel Update Success "))
+            indigo.server.log(u"Thingspeak channel \"{0}\" updated.".format(response_dict.get('name', "Not returned.")))
+            indigo.server.log(u"Created at: {0}".format(response_dict.get('created_at', "Not returned.")))
+            indigo.server.log(u"API Key(s): {0}".format(response_dict.get('api_keys', "Not returned.")))
+            indigo.server.log(u"ID: {0}".format(response_dict.get('id', "Not returned.")))
+            indigo.server.log(u"Description: {0}".format(response_dict.get('description', "Not returned.")))
+            indigo.server.log(u"Elevation: {0}".format(response_dict.get('elevation', "Not returned.")))
+            indigo.server.log(u"Latitude: {0}".format(response_dict.get('latitude', "Not returned.")))
+            indigo.server.log(u"License ID: {0}".format(response_dict.get('license_id', "Not returned.")))
+            indigo.server.log(u"Longitude: {0}".format(response_dict.get('longitude', "Not returned.")))
+            indigo.server.log(u"Metadata: {0}".format(response_dict.get('metadata', "Not returned.")))
+            indigo.server.log(u"Public: {0}".format(response_dict.get('public_flag', "Not returned.")))
+            indigo.server.log(u"Ranking: {0}".format(response_dict.get('ranking', "Not returned.")))
+            indigo.server.log(u"Tags: {0}".format(response_dict.get('tags', "Not returned.")))
+            indigo.server.log(u"Field1: {0}".format(valuesDict['field1']))
+            indigo.server.log(u"Field2: {0}".format(valuesDict['field2']))
+            indigo.server.log(u"Field3: {0}".format(valuesDict['field3']))
+            indigo.server.log(u"Field4: {0}".format(valuesDict['field4']))
+            indigo.server.log(u"Field5: {0}".format(valuesDict['field5']))
+            indigo.server.log(u"Field6: {0}".format(valuesDict['field6']))
+            indigo.server.log(u"Field7: {0}".format(valuesDict['field7']))
+            indigo.server.log(u"Field8: {0}".format(valuesDict['field8']))
+
+            return True
+
+        else:
+            return False, valuesDict
 
     def checkDebugLogFile(self):
         """
@@ -281,7 +479,9 @@ class Plugin(indigo.PluginBase):
         logging facility. It ensures the log file always exists and
         that it never contains more than one day of logs.
         """
-        self.debugLog(u"checkDebugLogFile() method called.")
+
+        # self.debugLog(u"checkDebugLogFile(self) called.")  # This is commented out as it will appear in the log every 2 seconds.
+
         log      = dt.datetime.strptime(self.pluginPrefs.get('logFileDate', "1970-01-01"), "%Y-%m-%d")
         log_date = dt.datetime.date(log)
         now      = dt.datetime.now()
@@ -297,37 +497,83 @@ class Plugin(indigo.PluginBase):
 
             self.pluginPrefs['logFileDate'] = str(today)  # Update plugin log date tracker with today's date.
 
-    def checkVersionNow(self):
-        """"""
-        self.debugLog(u"checkVersionNow() method called.")
+    def checkPluginVersion(self):
+        """ The checkPluginVersion(self) method will reach out to determine
+        whether the plugin version is current. """
+
+        self.debugLog(u"checkPluginVersion(self) called.")
+
         self.updater.checkVersionNow()
 
-    def listGenerator(self, filter="", valuesDict=None, typeId="", targetId=0):
-        """This method collects IDs and names for all Indigo devices and
-        variables. It creates a list of the form:
-        ((dev.id, dev.name), (var.id, var.name)).
+    def devKillAllComms(self):
+        """ devKillAllComms() sets the enabled status of all plugin devices to
+        false. """
+
+        self.debugLog(u"devKillAllComms(self) called.")
+
+        for dev in indigo.devices.itervalues("self"):
+            indigo.device.enable(dev, value=False)
+
+    def devPrepareForThingspeak(self, dev, parms):
         """
-        self.debugLog(u"listGenerator() method called.")
+        This method performs the upload to Thingspeak, evaluates, and
+        logs the result.
+        """
 
-        master_list = []
-        [master_list.append((dev.id, u"(D) {0}".format(dev.name))) for dev in indigo.devices.iter()]
-        [master_list.append((var.id, u"(V) {0}".format(var.name))) for var in indigo.variables.iter()]
-        master_list.append(('None', 'None'))
+        self.debugLog(u"devPrepareForThingspeak(self, dev, params) called. Device: {0}".format(dev.name))
 
-        if self.debugLevel >= 3:
-            self.debugLog(u"Generated list of devices and variables:")
-            self.debugLog(unicode(master_list))
+        url = "/update.json"
 
-        return master_list
+        response, response_dict = self.sendToThingspeak('post', url, parms)
 
-    def deviceStateGenerator1(self, filter="", valuesDict=None, typeId="", targetId=0):
+        # Process the results.  Thingspeak will respond with a "0" if something went wrong.
+        if response == 200:
+
+            dev.updateStateOnServer('channel_id', value=int(response_dict.get('channel_id', "0")))
+            dev.updateStateOnServer('elevation', value=int(response_dict.get('elevation', "0")))
+            dev.updateStateOnServer('entry_id', value=int(response_dict.get('entry_id', "0")))
+            dev.updateStateOnServer('latitude', value=float(response_dict.get('latitude', "0")))
+            dev.updateStateOnServer('longitude', value=float(response_dict.get('longitude', "0")))
+            dev.updateStateOnServer('status', value=response_dict.get('status', "0"))
+            dev.updateStateOnServer('thing1', value=response_dict.get('field1', "0"))
+            dev.updateStateOnServer('thing2', value=response_dict.get('field2', "0"))
+            dev.updateStateOnServer('thing3', value=response_dict.get('field3', "0"))
+            dev.updateStateOnServer('thing4', value=response_dict.get('field4', "0"))
+            dev.updateStateOnServer('thing5', value=response_dict.get('field5', "0"))
+            dev.updateStateOnServer('thing6', value=response_dict.get('field6', "0"))
+            dev.updateStateOnServer('thing7', value=response_dict.get('field7', "0"))
+            dev.updateStateOnServer('thing8', value=response_dict.get('field8', "0"))
+
+            # Convert UTC return to local time. There is an optional timezone parameter that can be used in the form of: time_zone="timezone=America%2FChicago&"
+            # For now, we will convert to UTC locally.
+            if response_dict['created_at']:
+                time = t.time()
+
+                # time_delta_to_utc formula thanks to Karl (kw123).
+                time_delta_to_utc = (int(t.mktime(dt.datetime.utcfromtimestamp(time + 10).timetuple()) - time) / 100) * 100
+                utc_obj           = dt.datetime.strptime(response_dict['created_at'], '%Y-%m-%dT%H:%M:%SZ')
+                local_time        = str(utc_obj - dt.timedelta(seconds=time_delta_to_utc))
+                dev.updateStateOnServer('created_at', value=local_time)
+            else:
+                dev.updateStateOnServer('created_at', value=u"Unknown")
+
+            new_props = dev.pluginProps
+            new_props['address'] = dev.states['channel_id']
+            dev.replacePluginPropsOnServer(new_props)
+
+            dev.updateStateOnServer('thingState', value=True, uiValue=u"OK")
+            dev.updateStateImageOnServer(indigo.kStateImageSel.SensorOn)
+            return True
+
+    def devStateGenerator1(self, filter="", valuesDict=None, typeId="", targetId=0):
         """
         The following eight methods produce lists of states that are
         associated with user-selected devices when configuring
         Thingspeak reporting devices. Each list includes only states
         for the selected device.
         """
-        self.debugLog(u"deviceStateGenerator1 method called.")
+
+        self.debugLog(u'devStateGenerator1(self, filter="", valuesDict=None, typeId="", targetId=0) method called.')
 
         if not valuesDict:
             return []
@@ -347,9 +593,10 @@ class Plugin(indigo.PluginBase):
             else:
                 return [('None', 'None')]
 
-    def deviceStateGenerator2(self, filter="", valuesDict=None, typeId="", targetId=0):
-        """"""
-        self.debugLog(u"deviceStateGenerator2 method called.")
+    def devStateGenerator2(self, filter="", valuesDict=None, typeId="", targetId=0):
+        """ See Docstring for devStateGenerator1 """
+
+        self.debugLog(u"devStateGenerator2() called.")
 
         if not valuesDict:
             return []
@@ -371,9 +618,10 @@ class Plugin(indigo.PluginBase):
             else:
                 return [('None', 'None')]
 
-    def deviceStateGenerator3(self, filter="", valuesDict=None, typeId="", targetId=0):
-        """"""
-        self.debugLog(u"deviceStateGenerator3 method called.")
+    def devStateGenerator3(self, filter="", valuesDict=None, typeId="", targetId=0):
+        """ See Docstring for devStateGenerator1 """
+
+        self.debugLog(u"devStateGenerator3() method called.")
 
         if not valuesDict:
             return []
@@ -393,9 +641,10 @@ class Plugin(indigo.PluginBase):
             else:
                 return [('None', 'None')]
 
-    def deviceStateGenerator4(self, filter="", valuesDict=None, typeId="", targetId=0):
-        """"""
-        self.debugLog(u"deviceStateGenerator4 method called.")
+    def devStateGenerator4(self, filter="", valuesDict=None, typeId="", targetId=0):
+        """ See Docstring for devStateGenerator1 """
+
+        self.debugLog(u"devStateGenerator4() method called.")
 
         if not valuesDict:
             return []
@@ -415,9 +664,10 @@ class Plugin(indigo.PluginBase):
             else:
                 return [('None', 'None')]
 
-    def deviceStateGenerator5(self, filter="", valuesDict=None, typeId="", targetId=0):
-        """"""
-        self.debugLog(u"deviceStateGenerator5 method called.")
+    def devStateGenerator5(self, filter="", valuesDict=None, typeId="", targetId=0):
+        """ See Docstring for devStateGenerator1 """
+
+        self.debugLog(u"devStateGenerator5() method called.")
 
         if not valuesDict:
             return []
@@ -437,9 +687,10 @@ class Plugin(indigo.PluginBase):
             else:
                 return [('None', 'None')]
 
-    def deviceStateGenerator6(self, filter="", valuesDict=None, typeId="", targetId=0):
-        """"""
-        self.debugLog(u"deviceStateGenerator6 method called.")
+    def devStateGenerator6(self, filter="", valuesDict=None, typeId="", targetId=0):
+        """ See Docstring for devStateGenerator1 """
+
+        self.debugLog(u"devStateGenerator6() method called.")
 
         if not valuesDict:
             return []
@@ -459,9 +710,10 @@ class Plugin(indigo.PluginBase):
             else:
                 return [('None', 'None')]
 
-    def deviceStateGenerator7(self, filter="", valuesDict=None, typeId="", targetId=0):
-        """"""
-        self.debugLog(u"deviceStateGenerator7 method called.")
+    def devStateGenerator7(self, filter="", valuesDict=None, typeId="", targetId=0):
+        """ See Docstring for devStateGenerator1 """
+
+        self.debugLog(u"devStateGenerator7() method called.")
 
         if not valuesDict:
             return []
@@ -481,9 +733,10 @@ class Plugin(indigo.PluginBase):
             else:
                 return [('None', 'None')]
 
-    def deviceStateGenerator8(self, filter="", valuesDict=None, typeId="", targetId=0):
-        """"""
-        self.debugLog(u"deviceStateGenerator8 method called.")
+    def devStateGenerator8(self, filter="", valuesDict=None, typeId="", targetId=0):
+        """ See Docstring for devStateGenerator1 """
+
+        self.debugLog(u"devStateGenerator8() method called.")
 
         if not valuesDict:
             return []
@@ -503,11 +756,23 @@ class Plugin(indigo.PluginBase):
             else:
                 return [('None', 'None')]
 
-    def encodeValueDicts(self):
-        """"""
+    def devUnkillAllComms(self):
+        """ devUnkillAllComms() sets the enabled status of all plugin devices to
+        true. """
 
-        # Encode dicts of data for [type:Thingspeak] for upload.
-        self.debugLog(u"encodeValueDicts() method called.")
+        self.debugLog(u"devUnkillAllComms(self) called.")
+
+        for dev in indigo.devices.itervalues("self"):
+            indigo.device.enable(dev, value=True)
+
+    def encodeValueDicts(self):
+        """ The encodeValueDicts(self) method is called when a device makes a
+        call to upload data to Thingspeak. """
+
+        # self.debugLog(u"encodeValueDicts(self) method called.")  # This is commented because it will print to the log every 2 seconds.
+
+        api_key = None
+        thing_dict = {}
 
         for dev in indigo.devices.itervalues("self"):
 
@@ -516,316 +781,295 @@ class Plugin(indigo.PluginBase):
                 indigo.server.log(u"A device is being (or has been) created, but it's not fully configured. Sleeping while you finish.")
                 continue
 
-            # A Thingspeak device has no API key.
-            elif not (dev.pluginProps['apiKey'] or dev.pluginProps['apiKey'] == ""):
-                indigo.server.log(u"Device {0} [{1}] has no API Key. Skipping device.".format(dev.name, dev.id))
-                continue
-
             elif not dev.enabled:
-                indigo.server.log(u"{0} device is disabled. Skipping.".format(dev.name))
                 continue
 
             # Iterate over up to 8 values per device.
             elif dev.enabled:
-                dev.updateStateOnServer('thingState', value=False, uiValue="processing")
-                api_key    = dev.pluginProps['apiKey']
-                api_key    = self.fixApiKey(dev, api_key)
-                thing_dict = {}
 
-                for v in range(8):
-                    v += 1
-                    thing_str       = 'thing{0}'.format(v)
-                    thing_state_str = 'thing{0}State'.format(v)
+                # For each device, see if it is time for an update
+                last_update = dev.states['created_at']
+                if last_update == '':
+                    last_update = '1970-01-01 00:00:00'
+                last_update = dt.datetime.strptime(last_update, '%Y-%m-%d %H:%M:%S')
 
-                    # Create the dict and add the API key to it.
-                    thing_dict['key'] = api_key
+                delta = dt.datetime.now() - last_update
+                delta = int(delta.total_seconds())
 
-                    # If there is a device created, but no value assigned.
-                    if not dev.pluginProps[thing_str] or dev.pluginProps[thing_str] == "None":
-                        var = "Null value"
+                if delta > int(dev.pluginProps['devUploadInterval']):
+                    dev.updateStateOnServer('thingState', value=False, uiValue="processing")
 
-                    else:
-                        thing_1 = dev.pluginProps[thing_str]
-                        state_1 = dev.pluginProps[thing_state_str]
+                    channel_id = dev.pluginProps['channelList']
 
-                        self.debugLog(u" " * 22)
-                        self.debugLog(unicode(u"ID: {0}".format(thing_1)))
-                        self.debugLog(unicode(u"Item: {0}".format(state_1)))
+                    # Get the write key for this channel
+                    url = "/channels.json"
+                    parms = {'api_key': self.pluginPrefs.get('apiKey', '')}
 
-                        # If it's a device state, do this:
-                        if int(thing_1) in indigo.devices:
+                    response, response_dict = self.sendToThingspeak('get', url, parms)
 
-                            try:
-                                var = indigo.devices[int(thing_1)].states[state_1]
-                                var = self.onlyNumerics(var)
-                                self.debugLog(u"Value: {0}".format(var))
+                    # Find the write api key for this channel (we go and get it in case it's changed.
+                    for thing in response_dict:
+                        if str(thing['id']) == str(channel_id):
+                            for key in thing['api_keys']:
+                                if key['write_flag']:
+                                    api_key = key['api_key']
 
-                            except Exception as error:
-                                self.errorLog(u"{0} - {1} is non-numeric or has been removed. Will try to upload, but it won't chart.".format(dev.name, dev.pluginProps[thing_str]))
-                                var = u"undefined"
-                            # Add device state value to dictionary.
-                            thing_dict['field' + str(v)] = var
+                    if not api_key:
+                        return
 
-                        # If it's a variable value, do this:
-                        elif int(thing_1) in indigo.variables:
-                            var = indigo.variables[int(thing_1)].value
+                    for v in range(8):
+                        v += 1
+                        thing_str       = 'thing{0}'.format(v)
+                        thing_state_str = 'thing{0}State'.format(v)
 
-                            try:
-                                var = self.onlyNumerics(var)
-                                self.debugLog(u"Value: {0}".format(var))
+                        # Create the dict and add the API key to it.
+                        thing_dict['key'] = api_key
 
-                            except Exception as error:
-                                self.errorLog(u"{0} - {1} is non-numeric or has been removed. Will try to upload, but it won't chart.".format(dev.name, dev.pluginProps[thing_str]))
+                        # If there is a device created, but no value assigned.
+                        if not dev.pluginProps[thing_str] or dev.pluginProps[thing_str] == "None":
+                            var = "Null value"
 
-                            # Add variable value to dictionary.
-                            thing_dict['field' + str(v)] = var
+                        else:
+                            thing_1 = dev.pluginProps[thing_str]
+                            state_1 = dev.pluginProps[thing_state_str]
 
-                    thing_dict['elevation'] = self.elevation
-                    thing_dict['latitude']  = self.latitude
-                    thing_dict['longitude'] = self.longitude
-                    thing_dict['twitter']   = self.twitter
-                    thing_dict['tweet']     = dev.pluginProps['tweet']
+                            self.debugLog(u" " * 22)
+                            self.debugLog(unicode(u"ID: {0}".format(thing_1)))
+                            self.debugLog(unicode(u"Item: {0}".format(state_1)))
 
-                if self.debugLevel >= 2:
-                    self.debugLog(unicode(thing_dict))
+                            # If it's a device state, do this:
+                            if int(thing_1) in indigo.devices:
 
-                # Open a connection and upload data to Thingspeak
-                try:
+                                try:
+                                    var = indigo.devices[int(thing_1)].states[state_1]
+                                    var = self.onlyNumerics(var)
+                                    self.debugLog(u"Value: {0}".format(var))
 
-                    # The plugin uploads variable values before moving on to the next one. Will continue until no more devices or the plugin throws an exception.
-                    self.debugLog(u"{0}: Channel updating...".format(dev.name))
-                    self.uploadToThingspeak(dev, urllib.urlencode(thing_dict))
+                                except Exception as error:
+                                    self.errorLog(u"{0} - {1} is non-numeric or has been removed. Will try to upload, but it won't chart.".format(dev.name, dev.pluginProps[thing_str]))
+                                    var = u"undefined"
+                                # Add device state value to dictionary.
+                                thing_dict['field' + str(v)] = var
 
-                except Exception as error:
+                            # If it's a variable value, do this:
+                            elif int(thing_1) in indigo.variables:
+                                var = indigo.variables[int(thing_1)].value
 
-                    f = open(self.logFile, 'a')
-                    f.write("{0} - Curl Return Code: {1}".format(dt.datetime.time(dt.datetime.now()), error))
-                    f.close()
+                                try:
+                                    var = self.onlyNumerics(var)
+                                    self.debugLog(u"Value: {0}".format(var))
 
-                    self.errorLog(unicode(error))
+                                except Exception as error:
+                                    self.errorLog(u"{0} - {1} is non-numeric or has been removed. Will try to upload, but it won't chart.".format(dev.name, dev.pluginProps[thing_str]))
 
+                                # Add variable value to dictionary.
+                                thing_dict['field' + str(v)] = var
+
+                        thing_dict['elevation']  = self.pluginPrefs['elevation']
+                        thing_dict['latitude']   = self.pluginPrefs['latitude']
+                        thing_dict['longitude']  = self.pluginPrefs['longitude']
+                        thing_dict['twitter']    = self.pluginPrefs['twitter']
+                        thing_dict['tweet']      = u"{0}".format(dev.pluginProps['tweet'])
+
+                    if self.debugLevel >= 2:
+                        self.debugLog(unicode(thing_dict))
+
+                    # Open a connection and upload data to Thingspeak
+                    try:
+
+                        # The plugin uploads variable values before moving on to the next one. Will continue until no more devices or the plugin throws an exception.
+                        self.debugLog(u"{0}: Channel updating...".format(dev.name))
+                        self.devPrepareForThingspeak(dev, thing_dict)
+
+                    except Exception as error:
+
+                        f = open(self.logFile, 'a')
+                        f.write("{0} - Curl Return Code: {1}".format(dt.datetime.time(dt.datetime.now()), error))
+                        f.close()
+
+                        self.errorLog(unicode(error))
+                else:
+                    continue
         return
 
-    def fixApiKey(self, dev, api_key):
-        """
-        This method evaluates user-provided Thingspeak api WRITE keys
-        for form and length. Where possible (and appropriate), it
-        corrects common errors such as length, and leading/trailing
-        spaces. It then writes the repaired api_key back to the
-        device dict.
-        """
-        self.debugLog(u"fixApiKey() method called.")
+    def listGenerator(self, filter="", valuesDict=None, typeId="", targetId=0):
+        """ The listGenerator(self, filter="", valuesDict=None, typeId="",
+        targetId=0) method returns the current list of devices and variables
+        from the list 'self.devicesAndVariablesList'. """
 
-        if api_key.startswith(" ") or api_key.endswith(" "):
-            api_key = api_key.strip()
-            self.errorLog(u"{0} API key includes leading and/or trailing spaces. Repairing.".format(dev.name))
+        self.debugLog(u'listGenerator(self, filter="", valuesDict=None, typeId="", targetId=0) called.')
 
-            # Overwrite with repaired api_key as needed.
-            new_props           = dev.pluginProps
-            new_props['apiKey'] = api_key
-            dev.replacePluginPropsOnServer(new_props)
+        return self.devicesAndVariablesList
 
-        # Thingspeak keys are always 16 digits in length. Plugin will continue to run, but Thingspeak will reject/ignore (which?) the submission.
-        if len(api_key) != 16:
-            self.errorLog(u"API key value {0} for [{1}] is not the proper length. Check key.".format(api_key, dev.name))
-        return api_key
-
-    def onlyNumerics(self, seq):
+    def onlyNumerics(self, val):
         """
-        This method evaluates values intended for upload. It ensures
-        that the values are numeric only (i.e., stripping °F) and
-        converting binary strings to integers. It also converts
-        Indigo string values to floats as necessary.
+        This method evaluates values intended for upload. It ensures that the
+        values are numeric only (i.e., stripping °F) and converting binary
+        strings to integers. It also converts Indigo string values to floats
+        as necessary.
         """
-        self.debugLog(u"onlyNumerics() method called.")
+
+        self.debugLog(u"onlyNumerics(self, seq) called.")
 
         try:
             # Does it float? Yes? Then it must be a witch.
-            return float(seq)
+            return float(val)
 
+        # If it doesn't float, let's see if it's a string of a number, otherwise let's try to convert it t a boolean.
         except ValueError:
-            xx = ''.join([c for c in seq if c in '1234567890.'])
-            if len(''.join([c for c in xx if c in '1234567890'])) != 0:
-                return xx
-            seq = str(seq).upper()
+            val = val.upper()
+            xx = ''.join([c for c in val if c in '1234567890.'])
 
-        if seq.lower() or seq.upper() in ("TRUE", "ON"):
+            if len(xx) != 0:
+                return xx
+
+        if val in ("TRUE", "ON"):
             return 1
 
-        if seq.lower or seq.upper() in ("FALSE", "OFF"):
+        if val in ("FALSE", "OFF"):
             return 0
 
-    def stopSleep(self, start_sleep):
-        """
-        The stopSleep() method accounts for changes to the user
-        upload interval preference. The plugin checks every 2 seconds
-        to see if the sleep interval should be updated.
-        """
-        # self.debugLog(u"stopSleep() method called.")
-        total_sleep = float(self.pluginPrefs.get('configMenuUploadInterval', 900)) - 2
+    def sendToThingspeak(self, request_type, url, parms):
+        """ The sendToThingspeak(self, request_type, url, parms) method is
+        called by several methods when data needs to be uploaded or downloaded.
+        It returns a response code and a json dict (or returns an empty dict
+        if no json is received from Thingspeak. """
 
-        if t.time() - start_sleep > total_sleep:
-            return True
-        return False
+        self.debugLog(u"sendToThingspeak(self, request_type, url, parms) called.")
+
+        response = ""
+        response_dict = {}
+        response_code = 0
+
+        if self.debugLevel >= 3:
+            self.debugLog(u"Warning! Debug set to high. Debug output contains your API keys.")
+        else:
+            self.debugLog(u"URL debug logging suppressed. Set debug level to high to write it to the log.")
+
+        # Build upload URL.
+        if self.pluginPrefs['devicePort']:
+            ts_ip = self.pluginPrefs['deviceIP']
+        else:
+            ts_ip = "api.thingspeak.com"
+
+        url = "https://{0}{1}".format(ts_ip, url)
+
+        try:
+            if request_type == "put":
+                response = requests.put(url, params=parms)
+            elif request_type == "get":
+                response = requests.get(url, params=parms)
+            elif request_type == "post":
+                response = requests.post(url, params=parms)
+            elif request_type == "delete":
+                response = requests.delete(url, params=parms)
+
+            self.debugLog(url)
+
+            try:
+                response_dict = response.json()
+            except:
+                response_dict = {}
+
+            response_code = response.status_code
+
+            self.debugLog(u"Result: {0}".format(response_dict))
+
+            if response_code == 200:
+                return response_code, response_dict
+
+            else:
+                response_error_msg_dict = {400: u"The request cannot be fulfilled due to bad syntax.",
+                                           401: u"Please provide proper authentication details.",
+                                           402: u"You have exceeded the message limit for the ThingSpeak™ license.",
+                                           405: u"Please use the proper HTTP method for this request.",
+                                           413: u"Your request is too large. Please reduce the size and try again.",
+                                           421: u"The server attempted to process your request, but has no action to perform.",
+                                           429: u"Server busy. Please wait before making another request.",
+                                           }
+
+                indigo.server.log(response_error_msg_dict.get(response.status_code, u"Error unknown."))
+                return response_code, response_dict
+
+        except requests.exceptions.ConnectionError:
+            self.errorLog(u"Unable to reach host. Will continue to attempt connection.")
+            return response_code, response_dict
+
+    def toggleDebug(self):
+        """Toggle debug on/off."""
+
+        self.debugLog(u"toggleDebug(self) called.")
+        if not self.debug:
+            self.debug = True
+            self.pluginPrefs['showDebugInfo'] = True
+            indigo.server.log(u"Debugging on.")
+            self.debugLog(u"Debug level: {0}".format(self.debugLevel))
+            if self.debugLevel >= 3:
+                self.debugLog(u"Warning! Debug set to high. Sensitive information will be sent to the Indigo log.")
+
+        else:
+            self.debug = False
+            self.pluginPrefs['showDebugInfo'] = False
+            indigo.server.log(u"Debugging off.")
+
+    def updateMenuConfigUi(self, valuesDict, menuId):
+        """"""
+        self.debugLog(u"updateMenuConfigUi(self, valuesDict, menuId) called.")
+
+        if menuId == 'channelUpdate':
+            url = "/channels.json"
+            parms = {'api_key': self.pluginPrefs.get('apiKey', '')}
+
+            response, response_dict = self.sendToThingspeak('get', url, parms)
+
+            for thing in response_dict:
+                if thing['id'] == int(valuesDict['channelList']):
+                    valuesDict['description'] = thing['description']
+                    valuesDict['metadata'] = thing['metadata']
+                    valuesDict['name'] = thing['name']
+                    valuesDict['tags'] = ",".join([tag['name'] for tag in thing['tags']])
+                    valuesDict['url'] = thing['url']
+                    valuesDict['public_flag'] == thing['public_flag']
+
+                    self.debugLog(u"Channel Info: {0}".format(thing))
+                    write_key = thing['api_keys'][0]['api_key']
+
+            url = "/channels/{0}/feeds.json".format(int(valuesDict['channelList']))
+            parms = {'api_key': write_key}
+
+            response, response_dict = self.sendToThingspeak('get', url, parms)
+
+            valuesDict['field1'] = response_dict['channel'].get('field1', '')
+            valuesDict['field2'] = response_dict['channel'].get('field2', '')
+            valuesDict['field3'] = response_dict['channel'].get('field3', '')
+            valuesDict['field4'] = response_dict['channel'].get('field4', '')
+            valuesDict['field5'] = response_dict['channel'].get('field5', '')
+            valuesDict['field6'] = response_dict['channel'].get('field6', '')
+            valuesDict['field7'] = response_dict['channel'].get('field7', '')
+            valuesDict['field8'] = response_dict['channel'].get('field8', '')
+
+        return valuesDict
 
     def updateThingspeakDataAction(self, valuesDict):
         """
-        The updateThingspeakDataAction () method invokes an instantaneous
-        update of the Thingspeak data channels. If this is called before
-        15 seconds have elapsed since the last update, Thingspeak will
+        The updateThingspeakDataAction (self, valuesDict) method invokes an
+        instantaneous update of the Thingspeak data channels. If this is called
+        before 15 seconds have elapsed since the last update, Thingspeak will
         ignore it. Unsure if the 15 second limit starts over.
         """
-        self.debugLog(u"updateThingspeakDataAction() method called.")
+
+        self.debugLog(u"updateThingspeakDataAction(self, valuesDict) called.")
         self.encodeValueDicts()
         return
 
     def updateThingspeakDataMenu(self):
         """
-        The updateThingspeakDataMenu() method invokes an instantaneous
+        The updateThingspeakDataMenu(self) method invokes an instantaneous
         update of the Thingspeak data channels. If this is called before
         15 seconds have elapsed since the last update, Thingspeak will
         ignore it. Unsure if the 15 second limit starts over.
         """
-        self.debugLog(u"updateThingspeakDataMenu called.")
+
+        self.debugLog(u"updateThingspeakDataMenu(self) called.")
         self.encodeValueDicts()
         return
-
-    def uploadToThingspeak(self, dev, params):
-        """
-        This method performs the upload to Thingspeak, evaluates, and
-        logs the result.
-        """
-        self.debugLog(u"uploadToThingspeak({0}) method called.".format(dev.name))
-
-        now = dt.datetime.time(dt.datetime.now())
-
-        try:
-
-            # Build upload URL.
-            if dev.pluginProps['devicePort']:
-                ts_ip = dev.pluginProps['deviceIP']
-            else:
-                ts_ip = "api.thingspeak.com"
-
-            url = "https://{0}/update.json?{1}".format(ts_ip, params)
-            if self.debugLevel >= 3:
-                self.debugLog(u"Warning! Debug set to high. Upload URL containing your API key(s) written was written to debug output.")
-                self.debugLog(url)
-            else:
-                self.debugLog(u"URL debug logging suppressed. Set debug level to high to write it to the log.")
-
-            # Initiate curl call to Thingspeak servers.
-            proc = subprocess.Popen(["curl", '-vs', url], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            (result, err) = proc.communicate()
-
-            # Process the results.  Thingspeak will respond with a "0" if something went wrong.
-            if len(result) > 0 and result != "0":
-
-                result = simplejson.loads(result, encoding="utf-8")
-                indigo.server.log(unicode(result))
-                for key, value in result.iteritems():
-                    if not value:
-                        result[key] = "0"
-
-                dev.updateStateOnServer('channel_id', value=int(result['channel_id']))
-                dev.updateStateOnServer('elevation', value=int(result['elevation']))
-                dev.updateStateOnServer('entry_id', value=int(result['entry_id']))
-                dev.updateStateOnServer('latitude', value=float(result['latitude']))
-                dev.updateStateOnServer('longitude', value=float(result['longitude']))
-                dev.updateStateOnServer('status', value=result['status'])
-                dev.updateStateOnServer('thing1', value=result['field1'])
-                dev.updateStateOnServer('thing2', value=result['field2'])
-                dev.updateStateOnServer('thing3', value=result['field3'])
-                dev.updateStateOnServer('thing4', value=result['field4'])
-                dev.updateStateOnServer('thing5', value=result['field5'])
-                dev.updateStateOnServer('thing6', value=result['field6'])
-                dev.updateStateOnServer('thing7', value=result['field7'])
-                dev.updateStateOnServer('thing8', value=result['field8'])
-
-                # Convert UTC return to local time. There is an optional timezone parameter that can be used in the form of: time_zone="timezone=America%2FChicago&"
-                # For now, we will convert to UTC locally.
-                if result['created_at']:
-                    time = t.time()
-
-                    # time_delta_to_utc formula thanks to Karl (kw123).
-                    time_delta_to_utc = (int(t.mktime(dt.datetime.utcfromtimestamp(time + 10).timetuple()) - time) / 100) * 100
-                    utc_obj           = dt.datetime.strptime(result['created_at'], '%Y-%m-%dT%H:%M:%SZ')
-                    local_time        = str(utc_obj - dt.timedelta(seconds=time_delta_to_utc))
-                    dev.updateStateOnServer('created_at', value=local_time)
-                else:
-                    dev.updateStateOnServer('created_at', value=u"Unknown")
-
-                dev.updateStateOnServer('thingState', value=True, uiValue=u"OK")
-                dev.updateStateImageOnServer(indigo.kStateImageSel.SensorOn)
-                return
-
-            # Something didn't go the way we wanted it to.
-            if err:
-                if proc.returncode == 6:
-
-                    f = open(self.logFile, 'a')
-                    f.write("{0} - uploadToThingSpeak()\nCurl Return Code: {1}\n{2} \n".format(now, proc.returncode, err))
-                    f.close()
-
-                    self.errorLog(u"Error: Could not resolve host. Possible causes: 1) The Thingspeak service is offline, 2) your Indigo server can not reach the Internet, or 3) your "
-                                  u"plugin is mis-configured.")
-                    self.debugLog(err)
-                    dev.updateStateOnServer('thingState', value=False, uiValue="no comm")
-                    dev.updateStateImageOnServer(indigo.kStateImageSel.SensorTripped)
-
-                elif proc.returncode == 0:
-
-                    f = open(self.logFile, 'a')
-                    f.write("{0} - uploadToThingSpeak()\nCurl Return Code: {1}\n{2} \n".format(now, proc.returncode, err))
-                    f.close()
-
-                    self.debugLog(u"\n{0}".format(err))
-                    dev.updateStateOnServer('thingState', value=False, uiValue="error")
-                    dev.updateStateImageOnServer(indigo.kStateImageSel.SensorTripped)
-
-                    indigo.server.log(u"{0}: Thingspeak has rejected the submission. Please check device configuration.".format(dev.name), isError=True)
-
-                elif err != "":
-
-                    f = open(self.logFile, 'a')
-                    f.write("{0} - Return Code: {1}\n {2} \n".format(now, proc.returncode, err))
-                    f.close()
-
-                    self.debugLog(u"\n{0}".format(err))
-                    dev.updateStateOnServer('thingState', value=False, uiValue="error")
-                    dev.updateStateImageOnServer(indigo.kStateImageSel.SensorOff)
-                return
-
-        # Something didn't go the way we wanted it to that we didn't anticipate.
-        except Exception as error:
-
-            f = open(self.logFile, 'a')
-            f.write("{0} - Misc Exception: {1}\n".format(now, error))
-            f.close()
-
-            self.errorLog(u"Unable to upload Thingspeak data. Reason: Exception - {0}".format(error))
-            dev.updateStateOnServer('thingState', value=False, uiValue="error")
-            dev.updateStateImageOnServer(indigo.kStateImageSel.SensorOff)
-            pass
-
-        return
-
-    def runConcurrentThread(self):
-        self.debugLog(u"runConcurrentThread initiated.")
-
-        try:
-            while True:
-                self.sleep(1)
-                self.updater.checkVersionPoll()
-                self.checkDebugLogFile()
-                self.encodeValueDicts()
-
-                start_sleep = t.time()
-                while True:
-                    if self.stopSleep(start_sleep):
-                        break
-                    self.sleep(2)
-
-        except self.StopThread:
-            self.debugLog(u"Thingspeak stop thread called.")
-            pass

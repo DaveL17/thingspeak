@@ -9,18 +9,22 @@
             <Field id="space0" type="label">
                 <Label/>
             </Field>
-            <Field id="apiKey" type="textfield" defaultValue="0000000000000000">
-                <Label>API Write Key:</Label>
+            <Field id="channelList" type="menu">
+                <Label>Channel</Label>
+                <List class="self" filter="" method="channelListGenerator" dynamicReload="true"/>
             </Field>
-            <Field id="devicePort" type="checkbox" defaultValue="false">
-                <Label>Local Server:</Label>
-                <Description fontSize="small">(Check if you are running a local Thingspeak server.)</Description>
-            </Field>
-            <Field id="devicePortHelp" type="label" visibleBindingId="devicePort" visibleBindingValue="true">
-                <Label>Please enter the IP address including the port number (default is port 3000.)</Label>
-            </Field>
-            <Field id="deviceIP" type="textfield" defaultValue="XXX.XXX.XXX.XXX:XXXX" visibleBindingId="devicePort" visibleBindingValue="true">
-                <Label>Server IP:</Label>
+            <Field id="devUploadInterval" type="menu" defaultValue="900" tooltip="How frequently would you would like to upload data to Thingspeak?">
+                <Label>Upload Interval:</Label>
+                <List>
+                    <Option value="15">15 Seconds</Option>
+                    <Option value="30">30 Seconds</Option>
+                    <Option value="60">1 Minute</Option>
+                    <Option value="120">2 Minutes</Option>
+                    <Option value="300">5 Minutes</Option>
+                    <Option value="900">15 Minutes</Option>
+                    <Option value="3600">1 Hour</Option>
+                    <Option value="86400">1 Day</Option>
+                </List>
             </Field>
             <Field id="tweet" type="textfield" defaultValue="">
                 <Label>Tweet:</Label>
@@ -37,11 +41,11 @@
             <Field id="thing1" type="menu" defaultValue="None">
                 <Label>Thing 1:</Label>
                 <List class="self" filter="" method="listGenerator" dynamicReload="true"/>
-                <CallbackMethod>deviceStateGenerator1</CallbackMethod>
+                <CallbackMethod>devStateGenerator1</CallbackMethod>
             </Field>
             <Field id="thing1State" type="menu" defaultValue="None">
                 <Label>Value to chart:</Label>
-                <List class="self" filter="" method="deviceStateGenerator1" dynamicReload="true"/>
+                <List class="self" filter="" method="devStateGenerator1" dynamicReload="true"/>
             </Field>
             <Field id="simpleSeparator2" type="separator"/>
 
@@ -49,11 +53,11 @@
             <Field id="thing2" type="menu" defaultValue="None" hidden="false">
                 <Label>Thing 2:</Label>
                 <List class="self" filter="" method="listGenerator" dynamicReload="true"/>
-                <CallbackMethod>deviceStateGenerator2</CallbackMethod>
+                <CallbackMethod>devStateGenerator2</CallbackMethod>
             </Field>
             <Field id="thing2State" type="menu" defaultValue="None">
                 <Label>Value to chart:</Label>
-                <List class="self" filter="" method="deviceStateGenerator2" dynamicReload="true"/>
+                <List class="self" filter="" method="devStateGenerator2" dynamicReload="true"/>
             </Field>
             <Field id="simpleSeparator3" type="separator"/>
 
@@ -61,11 +65,11 @@
             <Field id="thing3" type="menu" defaultValue="None" hidden="false">
                 <Label>Thing 3:</Label>
                 <List class="self" filter="" method="listGenerator" dynamicReload="true"/>
-                <CallbackMethod>deviceStateGenerator3</CallbackMethod>
+                <CallbackMethod>devStateGenerator3</CallbackMethod>
             </Field>
             <Field id="thing3State" type="menu" defaultValue="None">
                 <Label>Value to chart:</Label>
-                <List class="self" filter="" method="deviceStateGenerator3" dynamicReload="true"/>
+                <List class="self" filter="" method="devStateGenerator3" dynamicReload="true"/>
             </Field>
             <Field id="simpleSeparator4" type="separator"/>
 
@@ -73,11 +77,11 @@
             <Field id="thing4" type="menu" defaultValue="None" hidden="false">
                 <Label>Thing 4:</Label>
                 <List class="self" filter="" method="listGenerator" dynamicReload="true"/>
-                <CallbackMethod>deviceStateGenerator4</CallbackMethod>
+                <CallbackMethod>devStateGenerator4</CallbackMethod>
             </Field>
             <Field id="thing4State" type="menu" defaultValue="None">
                 <Label>Value to chart:</Label>
-                <List class="self" filter="" method="deviceStateGenerator4" dynamicReload="true"/>
+                <List class="self" filter="" method="devStateGenerator4" dynamicReload="true"/>
             </Field>
             <Field id="simpleSeparator5" type="separator"/>
 
@@ -85,11 +89,11 @@
             <Field id="thing5" type="menu" defaultValue="None" hidden="false">
                 <Label>Thing 5:</Label>
                 <List class="self" filter="" method="listGenerator" dynamicReload="true"/>
-                <CallbackMethod>deviceStateGenerator5</CallbackMethod>
+                <CallbackMethod>devStateGenerator5</CallbackMethod>
             </Field>
             <Field id="thing5State" type="menu" defaultValue="None">
                 <Label>Value to chart:</Label>
-                <List class="self" filter="" method="deviceStateGenerator5" dynamicReload="true"/>
+                <List class="self" filter="" method="devStateGenerator5" dynamicReload="true"/>
             </Field>
             <Field id="simpleSeparator6" type="separator"/>
 
@@ -97,11 +101,11 @@
             <Field id="thing6" type="menu" defaultValue="None" hidden="false">
                 <Label>Thing 6:</Label>
                 <List class="self" filter="" method="listGenerator" dynamicReload="true"/>
-                <CallbackMethod>deviceStateGenerator6</CallbackMethod>
+                <CallbackMethod>devStateGenerator6</CallbackMethod>
             </Field>
             <Field id="thing6State" type="menu" defaultValue="None">
                 <Label>Value to chart:</Label>
-                <List class="self" filter="" method="deviceStateGenerator6" dynamicReload="true"/>
+                <List class="self" filter="" method="devStateGenerator6" dynamicReload="true"/>
             </Field>
             <Field id="simpleSeparator7" type="separator"/>
 
@@ -109,11 +113,11 @@
             <Field id="thing7" type="menu" defaultValue="None" hidden="false">
                 <Label>Thing 7:</Label>
                 <List class="self" filter="" method="listGenerator" dynamicReload="true"/>
-                <CallbackMethod>deviceStateGenerator7</CallbackMethod>
+                <CallbackMethod>devStateGenerator7</CallbackMethod>
             </Field>
             <Field id="thing7State" type="menu" defaultValue="None">
                 <Label>Value to chart:</Label>
-                <List class="self" filter="" method="deviceStateGenerator7" dynamicReload="true"/>
+                <List class="self" filter="" method="devStateGenerator7" dynamicReload="true"/>
             </Field>
             <Field id="simpleSeparator8" type="separator"/>
 
@@ -121,11 +125,11 @@
             <Field id="thing8" type="menu" defaultValue="None">
                 <Label>Thing 8 :</Label>
                 <List class="self" filter="" method="listGenerator" dynamicReload="true"/>
-                <CallbackMethod>deviceStateGenerator8</CallbackMethod>
+                <CallbackMethod>devStateGenerator8</CallbackMethod>
             </Field>
             <Field id="thing8State" type="menu" defaultValue="None">
                 <Label>Value to chart:</Label>
-                <List class="self" filter="" method="deviceStateGenerator8" dynamicReload="true"/>
+                <List class="self" filter="" method="devStateGenerator8" dynamicReload="true"/>
             </Field>
         </ConfigUI>
 
@@ -210,16 +214,11 @@
                 <TriggerLabel>Thingspeak Thing 8</TriggerLabel>
                 <ControlPageLabel>Thingspeak Thing 8</ControlPageLabel>
             </State>
-            <!--<State id="tweet">-->
-                <!--<ValueType>String</ValueType>-->
-                <!--<TriggerLabel>Thingspeak Tweet</TriggerLabel>-->
-                <!--<ControlPageLabel>Thingspeak Tweet</ControlPageLabel>-->
-            <!--</State>-->
-            <!--<State id="twitter">-->
-                <!--<ValueType>String</ValueType>-->
-                <!--<TriggerLabel>Twitter Username</TriggerLabel>-->
-                <!--<ControlPageLabel>Twitter Username</ControlPageLabel>-->
-            <!--</State>-->
+            <State id="thing8">
+                <ValueType>Float</ValueType>
+                <TriggerLabel>Thingspeak Thing 8</TriggerLabel>
+                <ControlPageLabel>Thingspeak Thing 8</ControlPageLabel>
+            </State>
         </States>
 
         <UiDisplayStateId>thingState</UiDisplayStateId>

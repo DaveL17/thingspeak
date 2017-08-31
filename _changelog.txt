@@ -1,6 +1,22 @@
-v1.0.03
+v1.1.01
+This update may not be compatible with prior versions. You should be able to
+reconfigure each Thingspeak device individually and continue to use existing
+devices once they have been reconfigured. It is probably best to disable all
+Thingspeak devices before applying this update, and reconfigure each device
+one at a time.
+- Adds a plugin menu tool to create a new Thingspeak channel.
+- Adds a plugin menu tool to update an existing Thingspeak channel.
+- Adds a plugin menu tool to list all existing Thingspeak channels.
+- Adds a plugin menu tool to clear all data from an existing Thingspeak channel.
+- Adds plugin configuration item for the Thingspeak API Key.
+- Adds Thingspeak channel ID to the address field in the Indigo Device UI pane.
+- Changes device configuration to use a channel picker rather than having to enter api key.
+- Changes device configuration to allow each device to update on its own time
+  table. Note that the update time won't be precise but will be within 2-3 seconds.
 - Adds Twitter integration.
-- Improved speed.
+- Increments Python requirement to Python 2.6.
+- Converts from using subprocess module to requests module.
+- Improved speed - especially when device configuration dialogs are opened.
 - Adds more information for plugin validation checks.
 - Adds more information about state of data uploads.
 - Adds ability to customize where the plugin log is stored.

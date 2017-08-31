@@ -1,28 +1,214 @@
 <?xml version="1.0"?>
 <MenuItems>
-    <MenuItem id="killAllComms">
-        <Name>Disable All Devices</Name>
-        <CallbackMethod>killAllComms</CallbackMethod>
-    </MenuItem>
-    <MenuItem id="unkillAllComms">
-        <Name>Enable All Devices</Name>
-        <CallbackMethod>unkillAllComms</CallbackMethod>
-    </MenuItem>
-
-    <MenuItem id="titleSeparator" type="separator"/>
-
     <MenuItem id="checkForUpdates">
-    	<Name>Check for Plugin Updates...</Name>
-    	<CallbackMethod>checkVersionNow</CallbackMethod>
+    	<Name>Check for Plugin Updates</Name>
+    	<CallbackMethod>checkPluginVersion</CallbackMethod>
     </MenuItem>
+
+    <MenuItem id="devKillAllComms">
+        <Name>Disable All Devices</Name>
+        <CallbackMethod>devKillAllComms</CallbackMethod>
+    </MenuItem>
+
+    <MenuItem id="devUnkillAllComms">
+        <Name>Enable All Devices</Name>
+        <CallbackMethod>devUnkillAllComms</CallbackMethod>
+    </MenuItem>
+
+    <MenuItem id="toggleDebug">
+    	<Name>Toggle Debugging</Name>
+    	<CallbackMethod>toggleDebug</CallbackMethod>
+    </MenuItem>
+
+    <MenuItem id="toolsSeparator" type="separator"/>
+
+    <MenuItem id="channelClearFeed">
+    	<Name>Clear Channel Data...</Name>
+    	<CallbackMethod>channelClearFeed</CallbackMethod>
+        <ButtonTitle>Clear</ButtonTitle>
+        <ConfigUI>
+            <Field id="configLabel" type="label">
+                <Label>Use this tool to clear the feed of an existing channel. Important Note: use carefully as this cannot be undone.</Label>
+            </Field>
+            <Field id="channelList" type="menu">
+                <Label>Channel</Label>
+                <List class="self" filter="" method="channelListGenerator" dynamicReload="true"/>
+            </Field>
+		</ConfigUI>
+    </MenuItem>
+
+    <MenuItem id="channelCreate">
+    	<Name>Create a Channel...</Name>
+    	<CallbackMethod>channelCreate</CallbackMethod>
+        <ButtonTitle>Create</ButtonTitle>
+        <ConfigUI>
+            <Field id="configLabel" type="label">
+                <Label>Use these settings to create a new Thingspeak channel. All of the settings are optional; however, you must enter an API Key in the plugin configuration menu for this tool to work. You can change these values once the channel has been created (via the Thingspeak website).</Label>
+            </Field>
+            <Field id="configLabel2" type="label">
+                <Label> </Label>
+            </Field>
+            <Field id="devicePort" type="checkbox" defaultValue="false">
+                <Label>Local Server:</Label>
+                <Description fontSize="small">Check only if you are running a local Thingspeak server.</Description>
+            </Field>
+            <Field id="devicePortHelp" type="label" visibleBindingId="devicePort" visibleBindingValue="true">
+                <Label>Please enter the IP address including the port number (default is port 3000.)</Label>
+            </Field>
+            <Field id="deviceIP" type="textfield" defaultValue="XXX.XXX.XXX.XXX:XXXX" visibleBindingId="devicePort" visibleBindingValue="true">
+                <Label>Server IP:</Label>
+            </Field>
+		    <Field id="public_flag" type="checkbox" defaultValue="false">
+			    <Label>Public:</Label>
+                <Description>Check if channel should be public (default false, optional)</Description>
+		    </Field>
+		    <Field id="name" type="textfield" tooltip="Name of the channel (optional)">
+			    <Label>Name:</Label>
+		    </Field>
+		    <Field id="description" type="textfield" tooltip="Description of the channel (optional)">
+			    <Label>Description:</Label>
+		    </Field>
+		    <Field id="metadata" type="textfield" tooltip="Metadata can include JSON, XML, or any other data (optional)">
+			    <Label>Metadata:</Label>
+		    </Field>
+		    <Field id="tags" type="textfield" tooltip="Comma-separated list of tags (optional)">
+			    <Label>Tags:</Label>
+		    </Field>
+		    <Field id="url" type="textfield" tooltip="Webpage URL for the channel (optional)">
+			    <Label>URL:</Label>
+		    </Field>
+            <Field id="fieldLabel" type="label" alignText="right">
+                <Label>Field Names (optional)</Label>
+            </Field>
+            <Field id="seperator1" type="separator"/>
+		    <Field id="field1" type="textfield">
+			    <Label>Field 1:</Label>
+		    </Field>
+		    <Field id="field2" type="textfield">
+			    <Label>Field 2:</Label>
+		    </Field>
+		    <Field id="field3" type="textfield">
+			    <Label>Field 3:</Label>
+		    </Field>
+		    <Field id="field4" type="textfield">
+			    <Label>Field 4:</Label>
+		    </Field>
+		    <Field id="field5" type="textfield">
+			    <Label>Field 5:</Label>
+		    </Field>
+		    <Field id="field6" type="textfield">
+			    <Label>Field 6:</Label>
+		    </Field>
+		    <Field id="field7" type="textfield">
+			    <Label>Field 7:</Label>
+		    </Field>
+		    <Field id="field8" type="textfield">
+			    <Label>Field 8:</Label>
+		    </Field>
+        </ConfigUI>
+    </MenuItem>
+
+    <MenuItem id="channelDelete">
+    	<Name>Delete a Channel...</Name>
+    	<CallbackMethod>channelDelete</CallbackMethod>
+        <ButtonTitle>Delete</ButtonTitle>
+        <ConfigUI>
+            <Field id="configLabel" type="label">
+                <Label>Use this tool to delete a channel from Thingspeak. Important Note: use carefully as this cannot be undone.</Label>
+            </Field>
+            <Field id="channelList" type="menu">
+                <Label>Channel</Label>
+                <List class="self" filter="" method="channelListGenerator" dynamicReload="true"/>
+            </Field>
+		</ConfigUI>
+    </MenuItem>
+
+    <MenuItem id="getStatus">
+    	<Name>List Channels</Name>
+    	<CallbackMethod>channelList</CallbackMethod>
+    </MenuItem>
+
+    <MenuItem id="channelUpdate">
+    	<Name>Update Channel Info...</Name>
+    	<CallbackMethod>channelUpdate</CallbackMethod>
+        <ButtonTitle>Update</ButtonTitle>
+        <ConfigUI>
+            <Field id="configLabel" type="label">
+                <Label>Use this tool to update an existing channel. When you select the channel to update, the plugin will reach out to Thingspeak to get the current channel information.  This may take a moment depending on the speed of the reply.</Label>
+            </Field>
+            <Field id="channelList" type="menu">
+                <Label>Channel</Label>
+                <List class="self" filter="" method="channelListGenerator" dynamicReload="true"/>
+				<CallbackMethod>updateMenuConfigUi</CallbackMethod>
+            </Field>
+            <Field id="configLabel2" type="label">
+                <Label> </Label>
+            </Field>
+            <Field id="devicePort" type="checkbox" defaultValue="false">
+                <Label>Local Server:</Label>
+                <Description fontSize="small">Check only if you are running a local Thingspeak server.</Description>
+            </Field>
+            <Field id="devicePortHelp" type="label" visibleBindingId="devicePort" visibleBindingValue="true">
+                <Label>Please enter the IP address including the port number (default is port 3000.)</Label>
+            </Field>
+            <Field id="deviceIP" type="textfield" defaultValue="XXX.XXX.XXX.XXX:XXXX" visibleBindingId="devicePort" visibleBindingValue="true">
+                <Label>Server IP:</Label>
+            </Field>
+		    <Field id="public_flag" type="checkbox" defaultValue="false">
+			    <Label>Public:</Label>
+                <Description>Check if channel should be public (default false, optional)</Description>
+		    </Field>
+		    <Field id="name" type="textfield" tooltip="Name of the channel (optional)">
+			    <Label>Name:</Label>
+		    </Field>
+		    <Field id="description" type="textfield" tooltip="Description of the channel (optional)">
+			    <Label>Description:</Label>
+		    </Field>
+		    <Field id="metadata" type="textfield" tooltip="Metadata can include JSON, XML, or any other data (optional)">
+			    <Label>Metadata:</Label>
+		    </Field>
+		    <Field id="tags" type="textfield" tooltip="Comma-separated list of tags (optional)">
+			    <Label>Tags:</Label>
+		    </Field>
+		    <Field id="url" type="textfield" tooltip="Webpage URL for the channel (optional)">
+			    <Label>URL:</Label>
+		    </Field>
+            <Field id="fieldLabel" type="label" alignText="right">
+                <Label>Field Names (optional)</Label>
+            </Field>
+            <Field id="seperator1" type="separator"/>
+		    <Field id="field1" type="textfield">
+			    <Label>Field 1:</Label>
+		    </Field>
+		    <Field id="field2" type="textfield">
+			    <Label>Field 2:</Label>
+		    </Field>
+		    <Field id="field3" type="textfield">
+			    <Label>Field 3:</Label>
+		    </Field>
+		    <Field id="field4" type="textfield">
+			    <Label>Field 4:</Label>
+		    </Field>
+		    <Field id="field5" type="textfield">
+			    <Label>Field 5:</Label>
+		    </Field>
+		    <Field id="field6" type="textfield">
+			    <Label>Field 6:</Label>
+		    </Field>
+		    <Field id="field7" type="textfield">
+			    <Label>Field 7:</Label>
+		    </Field>
+		    <Field id="field8" type="textfield">
+			    <Label>Field 8:</Label>
+		    </Field>
+        </ConfigUI>
+    </MenuItem>
+
     <MenuItem id="uploadDataNow">
     	<Name>Upload Data Now</Name>
     	<CallbackMethod>updateThingspeakDataMenu</CallbackMethod>
     </MenuItem>
-    <MenuItem id="toggleDebug">
-    	<Name>Toggle Debugging</Name>
-    	<CallbackMethod>toggleDebugEnabled</CallbackMethod>
-    </MenuItem>
+
 </MenuItems>
 
 
