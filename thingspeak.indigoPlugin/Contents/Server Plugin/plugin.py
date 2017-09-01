@@ -5,9 +5,7 @@
 Thingspeak Plugin
 plugin.py
 Author: DaveL17
-Credits:    Chris - http://www.australianrobotics.com.au/news/how-to-
-                    talk-to-thingspeak-with-python-a-memory-cpu-monitor
-            Karl (kw123) - device state restriction methods
+Credits:    Karl (kw123) - device state restriction methods
             Update Checker by: berkinet (with additional features by Travis Cook)
 
 This script takes device and variable values and uploads them to
@@ -27,12 +25,12 @@ compatible (i.e., converting a string to a float.
 # TODO:
 
 import datetime as dt
+import indigoPluginUpdateChecker
 import os.path
 import pydevd
 import requests
 import sys
 import time as t
-import indigoPluginUpdateChecker
 
 try:
     import indigo
@@ -121,7 +119,7 @@ class Plugin(indigo.PluginBase):
 
         self.debugLog(u"deviceStartComm(self, dev) called. Device: {0}".format(dev.name))
         dev.stateListOrDisplayStateIdChanged()
-        dev.updateStateOnServer('thingState', value=False, uiValue=u"enabled")
+        dev.updateStateOnServer('thingState', value=False, uiValue=u"waiting")
         dev.updateStateImageOnServer(indigo.kStateImageSel.SensorOff)
 
     def deviceStopComm(self, dev):
@@ -193,7 +191,7 @@ class Plugin(indigo.PluginBase):
             try:
                 if len(valuesDict['apiKey']) not in (0, 16):
                     raise Exception
-            except Exception:
+            except ValueError:
                 error_msg_dict['apiKey'] = u"The API Key must be 16 characters long."
                 error_msg_dict['showAlertText'] = u"API Key Error:\n\nThe API Key must be 16 characters long and cannot contain spaces."
                 return False, valuesDict, error_msg_dict
@@ -201,7 +199,7 @@ class Plugin(indigo.PluginBase):
             # Test latitude and longitude. Must be integers or floats. Can be negative.
             try:
                 float(valuesDict['latitude'])
-            except ValueError as error:
+            except ValueError:
                 error_msg_dict['latitude'] = u"Please enter a number (positive, negative or zero)."
                 error_msg_dict['showAlertText'] = u"Latitude Error:\n\nThingspeak requires latitude to be expressed as a number. It can be positive, negative or zero."
                 valuesDict['latitude'] = 0
@@ -209,7 +207,7 @@ class Plugin(indigo.PluginBase):
 
             try:
                 float(valuesDict['longitude'])
-            except ValueError as error:
+            except ValueError:
                 error_msg_dict['longitude'] = u"Please enter a number (positive, negative or zero)."
                 error_msg_dict['showAlertText'] = u"Longitude Error:\n\nThingspeak requires longitude to be expressed as a number. It can be positive, negative or zero."
                 valuesDict['longitude'] = 0
@@ -238,7 +236,8 @@ class Plugin(indigo.PluginBase):
 
             elif valuesDict['updaterEmailsEnabled'] and "@" not in valuesDict['updaterEmail']:
                 error_msg_dict['updaterEmail'] = u"Please supply a valid email address."
-                error_msg_dict['showAlertText'] = u"Updater Email Error:\n\nThe plugin requires a valid email address in order to notify you of plugin updates (the email address needs an '@' symbol."
+                error_msg_dict['showAlertText'] = u"Updater Email Error:\n\nThe plugin requires a valid email address in order to notify you of plugin updates (the email address needs " \
+                                                  u"an '@' symbol."
                 return False, valuesDict, error_msg_dict
 
             # Test log file location setting.
@@ -297,8 +296,11 @@ class Plugin(indigo.PluginBase):
         parms = {'api_key': self.pluginPrefs.get('apiKey', '')}
 
         response, response_dict = self.sendToThingspeak('delete', url, parms)
-        indigo.server.log(u"Response: {0}".format(response))
-        indigo.server.log(u"Response Dict: {0}".format(response_dict))
+
+        if response == 200:
+            indigo.server.log(u"Channel successfully cleared.".format(response))
+        else:
+            self.errorLog(u"Problem clearing channel data.")
 
         return True
 
@@ -313,8 +315,11 @@ class Plugin(indigo.PluginBase):
         parms = {'api_key': self.pluginPrefs.get('apiKey', '')}
 
         response, response_dict = self.sendToThingspeak('delete', url, parms)
-        indigo.server.log(u"Response: {0}".format(response))
-        indigo.server.log(u"Response Dict: {0}".format(response_dict))
+
+        if response == 200:
+            indigo.server.log(u"Channel successfully deleted.".format(response))
+        else:
+            self.errorLog(u"Problem clearing channel data.")
 
         return True
 
@@ -350,25 +355,11 @@ class Plugin(indigo.PluginBase):
         response, response_dict = self.sendToThingspeak('post', url, parms)
 
         if response == 200:
-            indigo.server.log(u"{0:=^50}".format(" Create Channel Success "))
-            indigo.server.log(u"Thingspeak channel \"{0}\" created.".format(response_dict.get('name', "Not returned.")))
-            indigo.server.log(u"Created at: {0}".format(response_dict.get('created_at', "Not returned.")))
-            indigo.server.log(u"API Key(s): {0}".format(response_dict.get('api_keys', "Not returned.")))
-            indigo.server.log(u"ID: {0}".format(response_dict.get('id', "Not returned.")))
-            indigo.server.log(u"Description: {0}".format(response_dict.get('description', "Not returned.")))
-            indigo.server.log(u"Elevation: {0}".format(response_dict.get('elevation', "Not returned.")))
-            indigo.server.log(u"Latitude: {0}".format(response_dict.get('latitude', "Not returned.")))
-            indigo.server.log(u"License ID: {0}".format(response_dict.get('license_id', "Not returned.")))
-            indigo.server.log(u"Longitude: {0}".format(response_dict.get('longitude', "Not returned.")))
-            indigo.server.log(u"Metadata: {0}".format(response_dict.get('metadata', "Not returned.")))
-            indigo.server.log(u"Public: {0}".format(response_dict.get('public_flag', "Not returned.")))
-            indigo.server.log(u"Ranking: {0}".format(response_dict.get('ranking', "Not returned.")))
-            indigo.server.log(u"Tags: {0}".format(response_dict.get('tags', "Not returned.")))
-
+            indigo.server.log(u"Channel successfully created.".format(response))
             return True
-
         else:
-            return False, valuesDict
+            self.errorLog(u"Problem creating channel.")
+            return False
 
     def channelList(self):
         """ The channelList(self) method is called when a user selects 'List
@@ -383,6 +374,7 @@ class Plugin(indigo.PluginBase):
         response, response_dict = self.sendToThingspeak('get', url, parms)
 
         if response == 200:
+            write_key = ""
             indigo.server.log(u"{0:<8}{1:<25}{2:^9}{3:<21}{4:^10}{5:<18}".format('ID', 'Name', 'Public', 'Created At', 'Ranking', 'Write Key'))
             indigo.server.log(u"{0:=^100}".format(""))
             for thing in response_dict:
@@ -445,32 +437,10 @@ class Plugin(indigo.PluginBase):
         response, response_dict = self.sendToThingspeak('put', url, parms)
 
         if response == 200:
-            indigo.server.log(u"{0:=^50}".format(" Channel Update Success "))
-            indigo.server.log(u"Thingspeak channel \"{0}\" updated.".format(response_dict.get('name', "Not returned.")))
-            indigo.server.log(u"Created at: {0}".format(response_dict.get('created_at', "Not returned.")))
-            indigo.server.log(u"API Key(s): {0}".format(response_dict.get('api_keys', "Not returned.")))
-            indigo.server.log(u"ID: {0}".format(response_dict.get('id', "Not returned.")))
-            indigo.server.log(u"Description: {0}".format(response_dict.get('description', "Not returned.")))
-            indigo.server.log(u"Elevation: {0}".format(response_dict.get('elevation', "Not returned.")))
-            indigo.server.log(u"Latitude: {0}".format(response_dict.get('latitude', "Not returned.")))
-            indigo.server.log(u"License ID: {0}".format(response_dict.get('license_id', "Not returned.")))
-            indigo.server.log(u"Longitude: {0}".format(response_dict.get('longitude', "Not returned.")))
-            indigo.server.log(u"Metadata: {0}".format(response_dict.get('metadata', "Not returned.")))
-            indigo.server.log(u"Public: {0}".format(response_dict.get('public_flag', "Not returned.")))
-            indigo.server.log(u"Ranking: {0}".format(response_dict.get('ranking', "Not returned.")))
-            indigo.server.log(u"Tags: {0}".format(response_dict.get('tags', "Not returned.")))
-            indigo.server.log(u"Field1: {0}".format(valuesDict['field1']))
-            indigo.server.log(u"Field2: {0}".format(valuesDict['field2']))
-            indigo.server.log(u"Field3: {0}".format(valuesDict['field3']))
-            indigo.server.log(u"Field4: {0}".format(valuesDict['field4']))
-            indigo.server.log(u"Field5: {0}".format(valuesDict['field5']))
-            indigo.server.log(u"Field6: {0}".format(valuesDict['field6']))
-            indigo.server.log(u"Field7: {0}".format(valuesDict['field7']))
-            indigo.server.log(u"Field8: {0}".format(valuesDict['field8']))
-
+            indigo.server.log(u"Channel successfully updated.".format(response))
             return True
-
         else:
+            indigo.server.log(u"Problem updating channel settings.")
             return False, valuesDict
 
     def checkDebugLogFile(self):
@@ -845,7 +815,7 @@ class Plugin(indigo.PluginBase):
                                     var = self.onlyNumerics(var)
                                     self.debugLog(u"Value: {0}".format(var))
 
-                                except Exception as error:
+                                except ValueError:
                                     self.errorLog(u"{0} - {1} is non-numeric or has been removed. Will try to upload, but it won't chart.".format(dev.name, dev.pluginProps[thing_str]))
                                     var = u"undefined"
                                 # Add device state value to dictionary.
@@ -859,7 +829,7 @@ class Plugin(indigo.PluginBase):
                                     var = self.onlyNumerics(var)
                                     self.debugLog(u"Value: {0}".format(var))
 
-                                except Exception as error:
+                                except ValueError:
                                     self.errorLog(u"{0} - {1} is non-numeric or has been removed. Will try to upload, but it won't chart.".format(dev.name, dev.pluginProps[thing_str]))
 
                                 # Add variable value to dictionary.
@@ -956,13 +926,13 @@ class Plugin(indigo.PluginBase):
 
         try:
             if request_type == "put":
-                response = requests.put(url, params=parms)
+                response = requests.put(url, params=parms, timeout=10)
             elif request_type == "get":
-                response = requests.get(url, params=parms)
+                response = requests.get(url, params=parms, timeout=10)
             elif request_type == "post":
-                response = requests.post(url, params=parms)
+                response = requests.post(url, params=parms, timeout=10)
             elif request_type == "delete":
-                response = requests.delete(url, params=parms)
+                response = requests.delete(url, params=parms, timeout=10)
 
             self.debugLog(url)
 
@@ -995,6 +965,10 @@ class Plugin(indigo.PluginBase):
             self.errorLog(u"Unable to reach host. Will continue to attempt connection.")
             return response_code, response_dict
 
+        except requests.exceptions.Timeout:
+            self.errorLog(u"Host server timeout. Will continue to retry.")
+            return response_code, response_dict
+
     def toggleDebug(self):
         """Toggle debug on/off."""
 
@@ -1022,6 +996,7 @@ class Plugin(indigo.PluginBase):
 
             response, response_dict = self.sendToThingspeak('get', url, parms)
 
+            write_key = ""
             for thing in response_dict:
                 if thing['id'] == int(valuesDict['channelList']):
                     valuesDict['description'] = thing['description']
@@ -1029,7 +1004,7 @@ class Plugin(indigo.PluginBase):
                     valuesDict['name'] = thing['name']
                     valuesDict['tags'] = ",".join([tag['name'] for tag in thing['tags']])
                     valuesDict['url'] = thing['url']
-                    valuesDict['public_flag'] == thing['public_flag']
+                    valuesDict['public_flag'] = thing['public_flag']
 
                     self.debugLog(u"Channel Info: {0}".format(thing))
                     write_key = thing['api_keys'][0]['api_key']

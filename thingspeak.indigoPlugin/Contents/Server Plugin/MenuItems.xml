@@ -28,7 +28,10 @@
         <ButtonTitle>Clear</ButtonTitle>
         <ConfigUI>
             <Field id="configLabel" type="label">
-                <Label>Use this tool to clear the feed of an existing channel. Important Note: use carefully as this cannot be undone.</Label>
+                <Label>Use this tool to clear all data from a Thingspeak channel.</Label>
+            </Field>
+            <Field id="configLabel1" type="label" fontColor="red">
+                <Label>Important! This is permanent and cannot be undone.</Label>
             </Field>
             <Field id="channelList" type="menu">
                 <Label>Channel</Label>
@@ -114,7 +117,10 @@
         <ButtonTitle>Delete</ButtonTitle>
         <ConfigUI>
             <Field id="configLabel" type="label">
-                <Label>Use this tool to delete a channel from Thingspeak. Important Note: use carefully as this cannot be undone.</Label>
+                <Label>Use this tool to delete a channel from Thingspeak.</Label>
+            </Field>
+            <Field id="configLabel1" type="label" fontColor="red">
+                <Label>Important! This is permanent and cannot be undone.</Label>
             </Field>
             <Field id="channelList" type="menu">
                 <Label>Channel</Label>
