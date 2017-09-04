@@ -1,25 +1,33 @@
-#!/usr/bin/env python2.6
+#!/usr/bin/env python2.7
 # -*- coding: utf-8 -*-
 
 """
-Thingspeak Plugin
-plugin.py
-Author: DaveL17
-Credits:    Karl (kw123) - device state restriction methods
-            Update Checker by: berkinet (with additional features by Travis Cook)
+:filename: plugin.py
+:author: DaveL17
 
-This script takes device and variable values and uploads them to
-Thingspeak. In order to use it, you will need to have a Thingspeak
-account, and have configured Thingspeak channels. Each Thingspeak
-channel has a several API keys--this plugin uses an write key, which is
-unique to each channel. To use the plugin, create individual Indigo
-devices that represent a single Thingspeak channel. Under the device
-configuration menu, enter the appropriate Thingspeak API key, and
-assign Indigo devices or variables to each "Thing." Each plugin device
-can hold up to eight variables (a Thingspeak limit, not the plugin's.
-Currently, only numeric and binary variables will chart on Thingspeak,
-and the plugin tries to adjust variable values as needed to make them
-compatible (i.e., converting a string to a float.
+Thingspeak Plugin
+
+The Thingspeak Plugin for Indigo Home Control provides a facility to manage
+Thingspeak channels and upload data. The plugin takes device and variable
+values and uploads them to Thingspeak. In order to use it, you will need to
+have a Thingspeak account, and have configured Thingspeak channels. The plugin
+uses the master Thingspeak API key to access and manage each channel. To use
+the plugin, create individual Indigo devices that represent a single
+Thingspeak channel. Under the device configuration menu, assign Indigo devices
+or  variables to each "Thing." Each plugin device can hold up to eight
+variables (a Thingspeak limit.) Currently, only numeric and binary  variables
+will chart on Thingspeak, and the plugin tries to adjust variable values as
+needed to make them compatible (i.e., converting a string to a float).
+
+Credits
+ - Karl (kw123) - device state restriction methods
+ - Update Checker by: berkinet (with additional features by Travis Cook)
+
+
+`Thingspeak Plugin <https://davel17.github.io/thingspeak/>`_
+
+`Indigo Domotics <http://www.indigodomo.com>`_
+
 """
 
 # TODO:
@@ -96,7 +104,7 @@ class Plugin(indigo.PluginBase):
 
     def closedPrefsConfigUi(self, valuesDict, userCancelled):
 
-        self.debugLog(u"closedPrefsConfigUi(self, valuesDict, userCancelled) called.")
+        self.debugLog(u"closedPrefsConfigUi() called.")
 
         if userCancelled:
             self.debugLog(u"User prefs dialog cancelled.")
@@ -117,20 +125,20 @@ class Plugin(indigo.PluginBase):
 
     def deviceStartComm(self, dev):
 
-        self.debugLog(u"deviceStartComm(self, dev) called. Device: {0}".format(dev.name))
+        self.debugLog(u"deviceStartComm() called. Device: {0}".format(dev.name))
         dev.stateListOrDisplayStateIdChanged()
         dev.updateStateOnServer('thingState', value=False, uiValue=u"waiting")
         dev.updateStateImageOnServer(indigo.kStateImageSel.SensorOff)
 
     def deviceStopComm(self, dev):
 
-        self.debugLog(u"deviceStopComm(self, dev) called. Device: {0}".format(dev.name))
+        self.debugLog(u"deviceStopComm() called. Device: {0}".format(dev.name))
         dev.updateStateOnServer('thingState', value=False, uiValue=u"disabled")
         dev.updateStateImageOnServer(indigo.kStateImageSel.SensorOff)
 
     def getDeviceConfigUiValues(self, valuesDict, typeId, devId):
 
-        self.debugLog(u"getDeviceConfigUiValues(self, valuesDict, typeId, devId) called.")
+        self.debugLog(u"getDeviceConfigUiValues() called.")
 
         self.devicesAndVariablesList = []
         [self.devicesAndVariablesList.append((dev.id, u"(D) {0}".format(dev.name))) for dev in indigo.devices]
@@ -167,7 +175,7 @@ class Plugin(indigo.PluginBase):
 
     def startup(self):
 
-        self.debugLog(u"startup(self) method called.")
+        self.debugLog(u"startup() method called.")
 
         if self.debug and self.debugLevel >= 3:
             self.debugLog(u"Warning! Debug set to high. Sensitive information will be sent to the Indigo log.")
@@ -176,14 +184,14 @@ class Plugin(indigo.PluginBase):
 
     def shutdown(self):
 
-        self.debugLog(u"shutdown(self) method called.")
+        self.debugLog(u"shutdown() method called.")
 
         for dev in indigo.devices.iter('self'):
             dev.updateStateImageOnServer(indigo.kStateImageSel.SensorOff)
 
     def validatePrefsConfigUi(self, valuesDict):
 
-        self.debugLog(u"validatePrefsConfigUi(self, valuesDict) called.")
+        self.debugLog(u"validatePrefsConfigUi() called.")
 
         error_msg_dict = indigo.Dict()
 
@@ -265,29 +273,26 @@ class Plugin(indigo.PluginBase):
     # Plugin Methods ==========================================================
 
     def channelListGenerator(self, filter="", valuesDict=None, typeId="", targetId=0):
-        """ The channelListGenerator(self, filter="", valuesDict=None,
-        typeId="", targetId=0) method generates a list of channel names and IDs
-        which are used to identify the target channel. The list returned is
-        [(channel_id, channel_name), (channel_id, channel_name)] """
+        """ The channelListGenerator() method generates a list of channel names
+        and IDs which are used to identify the target channel.
 
-        self.debugLog(u'channelListGenerator(self, filter="", valuesDict=None, typeId="", targetId=0) called.')
+        :**url**: "/channels.json"
+        :**parms**: {'api_key': self.pluginPrefs.get('apiKey', '')}
+        :**return**: [(channel_id, channel_name), (channel_id, channel_name)] """
 
-        channel_list = []
+        self.debugLog(u'channelListGenerator() called.')
 
-        url = "/channels.json"
+        url   = "/channels.json"
         parms = {'api_key': self.pluginPrefs.get('apiKey', '')}
 
         response, response_dict = self.sendToThingspeak('get', url, parms)
 
-        for thing in response_dict:
-            channel_list.append((thing['id'], thing['name']))
-
-        return channel_list
+        return [(thing['id'], thing['name']) for thing in response_dict]
 
     def channelClearFeed(self, valuesDict, typeId):
-        """ The channelClearFeed(self, valuesDict, typeId) method is called
-        when a user selects 'Clear Channel Data' from the plugin menu. It is
-        used to clear all data from the channel (the channel remains intact.
+        """ The channelClearFeed() method is called when a user selects 'Clear
+        Channel Data' from the plugin menu. It is used to clear all data from
+        the channel (the channel remains intact.
         """
 
         self.debugLog(u'channelClearFeed(self, valuesDict, typeId) called.')
@@ -305,11 +310,11 @@ class Plugin(indigo.PluginBase):
         return True
 
     def channelDelete(self, valuesDict, typeId):
-        """ The channelDelete(self, valuesDict, typeId) method is called when
-        a user selects 'Delete a Channel' from the plugin menu. It is used to
-        delete a channel from Thingspeak. """
+        """ The channelDelete() method is called when a user selects 'Delete
+        a Channel' from the plugin menu. It is used to delete a channel from
+        Thingspeak. """
 
-        self.debugLog(u'channelDelete(self, valuesDict, typeId)')
+        self.debugLog(u'channelDelete()')
 
         url = "/channels/{0}.xml".format(valuesDict['channelList'])
         parms = {'api_key': self.pluginPrefs.get('apiKey', '')}
@@ -324,11 +329,11 @@ class Plugin(indigo.PluginBase):
         return True
 
     def channelCreate(self, valuesDict, typeId):
-        """ The channelCreate(self, valuesDict, typeId) method is called when
-        a user selects 'Create a Channel' from the plugin menu. It is used to
-        create a new channel on Thingspeak. """
+        """ The channelCreate() method is called when a user selects 'Create a
+        Channel' from the plugin menu. It is used to create a new channel on
+        Thingspeak. """
 
-        self.debugLog(u'channelCreate(self, valuesDict, typeId)')
+        self.debugLog(u'channelCreate()')
 
         url = "/channels.json"
 
@@ -362,11 +367,11 @@ class Plugin(indigo.PluginBase):
             return False
 
     def channelList(self):
-        """ The channelList(self) method is called when a user selects 'List
+        """ The channelList() method is called when a user selects 'List
         Channels' from the plugin menu. It is used to print a table of select
         channel information to the Indigo Events log. """
 
-        self.debugLog(u'channelList(self)')
+        self.debugLog(u'channelList()')
 
         url = "/channels.json"
         parms = {'api_key': self.pluginPrefs.get('apiKey', '')}
@@ -389,11 +394,11 @@ class Plugin(indigo.PluginBase):
             return False
 
     def channelUpdate(self, valuesDict, typeId):
-        """ The channelUpdate(self, valuesDict, typeId) method is called when
-        a user selects 'Update a Channel' from the plugin menu. It is used to
-        make changes to channel settings. """
+        """ The channelUpdate() method is called when a user selects 'Update
+        a Channel' from the plugin menu. It is used to make changes to channel
+        settings. """
 
-        self.debugLog(u"channelUpdate(self, valuesDict, typeId) called.")
+        self.debugLog(u"channelUpdate() called.")
         url = "/channels/{0}.json".format(valuesDict['channelList'])
 
         # Validation
@@ -445,12 +450,12 @@ class Plugin(indigo.PluginBase):
 
     def checkDebugLogFile(self):
         """
-        The checkDebugLogFile() method manages the Thingspeak Plugin
-        logging facility. It ensures the log file always exists and
-        that it never contains more than one day of logs.
+        The checkDebugLogFile() method manages the Thingspeak Plugin logging
+        facility. It ensures the log file always exists and that it never
+        contains more than one day of logs.
         """
 
-        # self.debugLog(u"checkDebugLogFile(self) called.")  # This is commented out as it will appear in the log every 2 seconds.
+        # self.debugLog(u"checkDebugLogFile() called.")  # This is commented out as it will appear in the log every 2 seconds.
 
         log      = dt.datetime.strptime(self.pluginPrefs.get('logFileDate', "1970-01-01"), "%Y-%m-%d")
         log_date = dt.datetime.date(log)
@@ -468,10 +473,10 @@ class Plugin(indigo.PluginBase):
             self.pluginPrefs['logFileDate'] = str(today)  # Update plugin log date tracker with today's date.
 
     def checkPluginVersion(self):
-        """ The checkPluginVersion(self) method will reach out to determine
-        whether the plugin version is current. """
+        """ The checkPluginVersion() method will reach out to determine whether
+         the plugin version is current. """
 
-        self.debugLog(u"checkPluginVersion(self) called.")
+        self.debugLog(u"checkPluginVersion() called.")
 
         self.updater.checkVersionNow()
 
@@ -479,18 +484,18 @@ class Plugin(indigo.PluginBase):
         """ devKillAllComms() sets the enabled status of all plugin devices to
         false. """
 
-        self.debugLog(u"devKillAllComms(self) called.")
+        self.debugLog(u"devKillAllComms() called.")
 
         for dev in indigo.devices.itervalues("self"):
             indigo.device.enable(dev, value=False)
 
     def devPrepareForThingspeak(self, dev, parms):
         """
-        This method performs the upload to Thingspeak, evaluates, and
-        logs the result.
+        This method performs the upload to Thingspeak, evaluates, and logs the
+        result.
         """
 
-        self.debugLog(u"devPrepareForThingspeak(self, dev, params) called. Device: {0}".format(dev.name))
+        self.debugLog(u"devPrepareForThingspeak() called. Device: {0}".format(dev.name))
 
         url = "/update.json"
 
@@ -537,13 +542,12 @@ class Plugin(indigo.PluginBase):
 
     def devStateGenerator1(self, filter="", valuesDict=None, typeId="", targetId=0):
         """
-        The following eight methods produce lists of states that are
-        associated with user-selected devices when configuring
-        Thingspeak reporting devices. Each list includes only states
-        for the selected device.
+        The following eight methods produce lists of states that are associated
+        with user-selected devices when configuring Thingspeak reporting
+        devices. Each list includes only states for the selected device.
         """
 
-        self.debugLog(u'devStateGenerator1(self, filter="", valuesDict=None, typeId="", targetId=0) method called.')
+        self.debugLog(u'devStateGenerator1() method called.')
 
         if not valuesDict:
             return []
@@ -727,19 +731,19 @@ class Plugin(indigo.PluginBase):
                 return [('None', 'None')]
 
     def devUnkillAllComms(self):
-        """ devUnkillAllComms() sets the enabled status of all plugin devices to
-        true. """
+        """ devUnkillAllComms() sets the enabled status of all plugin devices
+        to true. """
 
-        self.debugLog(u"devUnkillAllComms(self) called.")
+        self.debugLog(u"devUnkillAllComms() called.")
 
         for dev in indigo.devices.itervalues("self"):
             indigo.device.enable(dev, value=True)
 
     def encodeValueDicts(self):
-        """ The encodeValueDicts(self) method is called when a device makes a
-        call to upload data to Thingspeak. """
+        """ The encodeValueDicts() method is called when a device makes a call
+        to upload data to Thingspeak. """
 
-        # self.debugLog(u"encodeValueDicts(self) method called.")  # This is commented because it will print to the log every 2 seconds.
+        # self.debugLog(u"encodeValueDicts() method called.")  # This is commented because it will print to the log every 2 seconds.
 
         api_key = None
         thing_dict = {}
@@ -863,11 +867,10 @@ class Plugin(indigo.PluginBase):
         return
 
     def listGenerator(self, filter="", valuesDict=None, typeId="", targetId=0):
-        """ The listGenerator(self, filter="", valuesDict=None, typeId="",
-        targetId=0) method returns the current list of devices and variables
-        from the list 'self.devicesAndVariablesList'. """
+        """ The listGenerator() method returns the current list of devices and
+        variables from the list 'self.devicesAndVariablesList'. """
 
-        self.debugLog(u'listGenerator(self, filter="", valuesDict=None, typeId="", targetId=0) called.')
+        self.debugLog(u'listGenerator() called.')
 
         return self.devicesAndVariablesList
 
@@ -879,7 +882,7 @@ class Plugin(indigo.PluginBase):
         as necessary.
         """
 
-        self.debugLog(u"onlyNumerics(self, seq) called.")
+        self.debugLog(u"onlyNumerics() called.")
 
         try:
             # Does it float? Yes? Then it must be a witch.
@@ -900,12 +903,12 @@ class Plugin(indigo.PluginBase):
             return 0
 
     def sendToThingspeak(self, request_type, url, parms):
-        """ The sendToThingspeak(self, request_type, url, parms) method is
+        """ The sendToThingspeak() method is
         called by several methods when data needs to be uploaded or downloaded.
         It returns a response code and a json dict (or returns an empty dict
         if no json is received from Thingspeak. """
 
-        self.debugLog(u"sendToThingspeak(self, request_type, url, parms) called.")
+        self.debugLog(u"sendToThingspeak() called.")
 
         response = ""
         response_dict = {}
@@ -972,7 +975,7 @@ class Plugin(indigo.PluginBase):
     def toggleDebug(self):
         """Toggle debug on/off."""
 
-        self.debugLog(u"toggleDebug(self) called.")
+        self.debugLog(u"toggleDebug() called.")
         if not self.debug:
             self.debug = True
             self.pluginPrefs['showDebugInfo'] = True
@@ -988,7 +991,7 @@ class Plugin(indigo.PluginBase):
 
     def updateMenuConfigUi(self, valuesDict, menuId):
         """"""
-        self.debugLog(u"updateMenuConfigUi(self, valuesDict, menuId) called.")
+        self.debugLog(u"updateMenuConfigUi() called.")
 
         if menuId == 'channelUpdate':
             url = "/channels.json"
@@ -1027,24 +1030,24 @@ class Plugin(indigo.PluginBase):
 
     def updateThingspeakDataAction(self, valuesDict):
         """
-        The updateThingspeakDataAction (self, valuesDict) method invokes an
-        instantaneous update of the Thingspeak data channels. If this is called
-        before 15 seconds have elapsed since the last update, Thingspeak will
-        ignore it. Unsure if the 15 second limit starts over.
+        The updateThingspeakDataAction () method invokes an instantaneous
+        update of the Thingspeak data channels. If this is called before 15
+        seconds have elapsed since the last update, Thingspeak will ignore it.
+        Unsure if the 15 second limit starts over.
         """
 
-        self.debugLog(u"updateThingspeakDataAction(self, valuesDict) called.")
+        self.debugLog(u"updateThingspeakDataAction() called.")
         self.encodeValueDicts()
         return
 
     def updateThingspeakDataMenu(self):
         """
-        The updateThingspeakDataMenu(self) method invokes an instantaneous
-        update of the Thingspeak data channels. If this is called before
-        15 seconds have elapsed since the last update, Thingspeak will
-        ignore it. Unsure if the 15 second limit starts over.
+        The updateThingspeakDataMenu() method invokes an instantaneous update
+        of the Thingspeak data channels. If this is called before 15 seconds
+        have elapsed since the last update, Thingspeak will ignore it. Unsure
+        if the 15 second limit starts over.
         """
 
-        self.debugLog(u"updateThingspeakDataMenu(self) called.")
+        self.debugLog(u"updateThingspeakDataMenu() called.")
         self.encodeValueDicts()
         return
