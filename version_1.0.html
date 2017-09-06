@@ -31,14 +31,15 @@
     individual device can contain up to eight data elements for upload. There is no limit to the number of Thingspeak Channels that the plugin can support.
 
 </p>
+
 <p>
-    <span class="warningText">Note: </span>for prior versions, please use <a href="version_1.0.html">these instructions</a>.
+    <span class="warningText">Note: </span>for version numbers v1.1 and greater, please use <a href="index.html">these instructions</a>.
 </p>
 
 <h3>Installation</h3>
 <figure class="TextWrap">
     <figcaption>Thingspeak Plugin Configuration Dialog</figcaption>
-    <img class="TextWrap" src="img/img_pluginConfigDialog_v1.1.png">
+    <img class="TextWrap" src="img/img_pluginConfigDialog.png">
 </figure>
 <p>
     Installing the Thingspeak Plugin is accomplished in the same way that you would install other Indigo plugins. There are no additional steps or other Python packages that need to be
@@ -55,33 +56,10 @@
     <li>
         <span>Upload Settings</span>
         <p>
-            Thingspeak Upload Settings apply to all operations of the plugin. There are three settings: API Key, Log File Path, and Local Server.
+            Thingspeak Upload Settings control the frequency with which the plugin interacts with the Thingspeak system. There is only one plugin timing setting: Upload Interval. The
+            Upload interval setting controls how often each Thingspeak Plugin device will reach out to the Thingspeak servers to upload data. This setting affects all devices that you
+            create (all devices upload at the same frequency.) The options range from every 15 seconds to once per day (15 seconds is the minimum allowed by Thingspeak.)
         </p>
-        <ul>
-            <li>
-                <span>API Key</span>
-                <p>
-                    The API Key is your main Thingspeak API key found in your account settings on the Thingspeak website. This key is required in order for the plugin to communicate with
-                    Thingspeak and is used in constructing Thingspeak API calls (like uploading data and configuring Thingspeak Channels). This key is only retained locally and is not
-                    captured or transmitted anywhere but Thingspeak.
-                </p>
-            </li>
-            <li>
-                <span>Log File Path</span>
-                <p>
-                    The log file path is used to designate where you would like the plugin's log file to be saved. The default location is:
-                    '/Library/Application Support/Perceptive Automation/Indigo 7/Logs/Thingspeak Log.txt'; however, you can set this path to any location that the Indigo Server can
-                    access.
-                </p>
-            </li>
-            <li>
-                <span>Local Server</span>
-                <p>
-                    The Local Server setting allows for installations where a Thingspeak Server is running on the local LAN. If you don't have a local server running, or don't know what
-                    any of this means, leave this setting unchecked.
-                </p>
-            </li>
-        </ul>
     </li>
     <li>
         <span>Optional Settings</span>
@@ -114,11 +92,18 @@
         </ul>
     </li>
     <li>
-        <span>Plugin Update Notifications (optional)</span>
+        <span>Update Notifications (optional)</span>
         <p>
             The plugin update notification settings tell the plugin to alert you when a new version of the plugin is available. To enable notifications, check the appropriate box and
             enter a valid email address. This facility also requires that the user enable Indigo’s facility to send and receive email messages. The plugin does not send messages on its
             own or collect any information about usage. All personal information is stored on the user’s machine.
+        </p>
+    </li>
+    <li>
+        <span>Log File Path</span>
+        <p>
+            Enter the full path (including the filename) where you would like to save the Thingspeak plugin logfile. If the specified location doesn't exist, the plugin will attempt to
+            create if for you.
         </p>
     </li>
     <li>
@@ -139,7 +124,7 @@
 <h3>Devices</h3>
 <figure class="TextWrap">
     <figcaption>Thingspeak Device Configuration Dialog</figcaption>
-    <img class="TextWrap" src="img/img_deviceConfigDialogv1.1.png">
+    <img class="TextWrap" src="img/img_deviceConfigDialog.png">
 </figure>
 
 <p>
@@ -148,18 +133,16 @@
 </p>
 <ul>
     <li>
-        <span>Channel</span>
+        <span>API Write Key</span>
         <p>
-            Select the channel that you would like to link to this device from the dropdown menu. Note that each time you open a device settings dialog, the plugin will reach out to the
-            Thingspeak server to obtain the current list of available channels.  As a result, it may take a few moments for the dialog to open.
+            This key is obtained from Thingspeak. Each Thingspeak channel has a unique write key, and each Thingspeak Plugin device should have a unique write key as well.
         </p>
     </li>
     <li>
-        <span>Upload Interval</span>
+        <span>Local Server</span>
         <p>
-            Each Thingspeak plugin device has its own upload interval. Select from the list of available options using the Upload Interval dropdown menu. Note that Thingspeak will not
-            accept upload intervals shorter than 15 seconds for free plans. If there is a call for upload frequencies shorter than 15 seconds, please contact me (this may be especially
-            useful for installations that run a local Thingspeak server).
+            If this box is checked, a field will appear for you to enter the local IP address of your personal Thingspeak server. If you later uncheck the box, the plugin will attempt to
+            perform the upload to Thingspeak's servers.
         </p>
     </li>
     <li>
@@ -236,13 +219,19 @@
 <h3>Menu Items</h3>
 <figure class="TextWrap">
     <figcaption>Thingspeak Plugin Menu Items</figcaption>
-    <img class="TextWrap" src="img/img_pluginMenuItemsv1.1.png">
+    <img class="TextWrap" src="img/img_pluginMenuItems.png">
 </figure>
 
 <p>
     There are a few custom menu items for the Thingspeak plugin:
 </p>
 <ul>
+    <li>
+        <span>Enable/Disable All Devices</span>
+        <p>
+            These two menus items can be used to quickly enable (or disable) all Thingspeak plugin devices.
+        </p>
+    </li>
     <li>
         <span>Check for Plugin Updates</span>
         <p>
@@ -251,9 +240,10 @@
         </p>
     </li>
     <li>
-        <span>Enable/Disable All Devices</span>
+        <span>Upload Data Now</span>
         <p>
-            These two menus items can be used to quickly enable (or disable) all Thingspeak plugin devices.
+            This will cause the plugin to initiate a refresh cycle outside the scheduled update. This will not be successful if the last update was less than 15 seconds ago. This is a
+            (completely reasonable) time limit imposed by Thingspeak—not imposed by the plugin.
         </p>
     </li>
     <li>
@@ -263,66 +253,16 @@
             versa.)
         </p>
     </li>
-    <li>
-        <span>Clear Channel Data...</span>
-        <p>
-            This tool allows you to clear all data from a Thingspeak channel. When you select this menu item, a dialog box will appear that allows you to select the channel to clear.
-            The data will not be cleared until you select a channel and click on the "Clear" button.
-            <br><br><span style = "color:red;background-color:black;">DANGER:</span> Changes made using this tool are permanent and cannot be undone.
-        </p>
-    </li>
-    <li>
-        <span>Create a channel...</span>
-        <p>
-            This tool allows you to create a new channel on the Thingspeak server. When you select this menu item, a dialog box will appear that allows you to configure the channel. All
-            items in this dialog are optional--if you do not enter an element, Thingspeak will populate the element for you. Regardless of the information used to create the channel, you
-            can always change it later. (Note that if you are running a local Thingspeak server, you will need to configure the device to work with your server so that's technically not
-            optional.)
-        </p>
-    </li>
-    <li>
-        <span>Delete a Channel...</span>
-        <p>
-            This tool allows you to delete a channel from the Thingspeak server. When you select this menu item, a dialog box will appear that allows you to select the channel to
-            delete. The channel will not be deleted until you select a channel and click on the "Delete" button.
-            <br><br><span style = "color:red;background-color:black;">DANGER:</span> Changes made using this tool are permanent and cannot be undone.
-        </p>
-    </li>
-    <li>
-        <span>List Channels</span>
-        <p>
-            This tool allows you to print a list of available Thingspeak channels to the Indigo Event Log. This action happens immediately. No changes are made to your channels or your
-            data by using this tool.
-        </p>
-    </li>
-    <li>
-        <span>Update Channel Info...</span>
-        <p>
-            This tool allows you to change channel settings for existing Thingspeak channels. The plugin reaches out to the Thingspeak server to get a list of available channels, so it
-            may take a moment to open. Select the channel to change using the dropdown menu. Once you select a channel, the plugin will reach out to the Thingspeak servers again to get
-            the current information for the channel you selected and will populate the fields with that data. Make any needed changes to the data fields and then select the "Update"
-            button. Once you select the Update button, the changes will be committed -- but if you make a mistake or change your mind, you can reuse the tool to fix any problems. You
-            can hover your mouse cursor over each field to get helpful hints on ways to configure the information.
-        </p>
-    </li>
-    <li>
-        <span>Upload Data Now</span>
-        <p>
-            This will cause the plugin to initiate a refresh cycle outside the scheduled update. This will not be successful if the last update was less than 15 seconds ago. This is a
-            (completely reasonable) time limit imposed by Thingspeak—not imposed by the plugin (that is, unless you are running your own server or have a paid plan with Thingspeak. In
-            these cases, there is no limit to the number of uploads).
-        </p>
-    </li>
 </ul>
 
 <h3>Framework</h3>
 <p>
     The framework of the entire environment as it relates to Indigo is very straightforward. Indigo talks through the plugin to the Thingspeak servers to allow users to upload data from
-    their Indigo installations to the Thingspeak data network. Communication is bi-directional and presently happens through routine calls using common Python communication protocols.
-    Plugin users choose a predefined upload interval through a standard plugin configuration setting, the plugin reaches out to the Thingspeak servers and uploads/downloads data, and
-    Thingspeak responds with a message denoting success (or lack thereof.) This plugin is designed to work with Indigo 6.0 and above and is therefore compatible with Python 2.6. I will
-    do my best to account for other implementations where possible, but sometimes I will not be able to do that when it would cause a loss of functionality or break existing frameworks.
-    I will also work to continue to keep the plugin current as Indigo, its Python implementation and the Thingspeak API evolve over time.
+    their Indigo installations to the Thingspeak data network. Communication is bi-directional (but only slightly), and presently happens through routine calls using common Python
+    communication protocols. Plugin users choose a predefined upload interval through a standard plugin configuration setting, the plugin reaches out to the Thingspeak servers and
+    uploads data, and Thingspeak responds with a message denoting success (or lack thereof.) This plugin is designed to work with Indigo 6.0 and above and is therefore compatible with
+    Python 2.6. I will do my best to account for other implementations where possible, but sometimes I will not be able to do that when it would cause a loss of functionality or break
+    existing frameworks. I will also work to continue to keep the plugin current as Indigo, its Python implementation and Thingspeak API evolve over time.
 </p>
 
 <h3>Scripting and Technical Details</h3>
