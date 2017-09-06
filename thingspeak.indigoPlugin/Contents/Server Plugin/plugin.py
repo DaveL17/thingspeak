@@ -35,7 +35,7 @@ Credits
 import datetime as dt
 import indigoPluginUpdateChecker
 import os.path
-import pydevd
+# import pydevd
 import requests
 import sys
 import time as t
@@ -50,7 +50,7 @@ __build__     = ""
 __copyright__ = 'Copyright 2017 DaveL17'
 __license__   = "MIT"
 __title__     = 'Thingspeak Plugin for Indigo Home Control'
-__version__   = '1.1.01'
+__version__   = '1.1.02'
 
 kDefaultPluginPrefs = {
     u'configMenuTimeoutInterval': 15,            # How long to wait on a server timeout.
@@ -84,12 +84,12 @@ class Plugin(indigo.PluginBase):
         self.debugLevel     = pluginPrefs['showDebugLevel']
         self.devicesAndVariablesList = []
         self.logFileDate    = pluginPrefs.get('logFileDate', "1970-01-01")
-        self.logFile        = pluginPrefs['logFileLocation']
+        self.logFile        = pluginPrefs.get('logFileLocation', "/Library/Application Support/Perceptive Automation/Indigo {0}/Logs/Thingspeak Log.txt".format(indigo.server.version[0]))
         updater_url         = "https://davel17.github.io/thingspeak/thingspeak_version.html"
         self.updater        = indigoPluginUpdateChecker.updateChecker(self, updater_url)
 
         # Create the log file location if it doesn't exist.
-        split_path = os.path.split(pluginPrefs['logFileLocation'])
+        split_path = os.path.split(self.logFile)
         if not os.path.exists(split_path[0]):
             self.debugLog(u"Log file location doesn't exist. Attempting to create it.")
             os.makedirs(split_path[0])

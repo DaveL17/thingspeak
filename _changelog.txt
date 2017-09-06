@@ -1,3 +1,6 @@
+v1.1.02
+- Fixes a couple bugs for Indigo 6 installations.
+
 v1.1.01
 This update may not be compatible with prior versions. You should be able to
 reconfigure each Thingspeak device individually and continue to use existing

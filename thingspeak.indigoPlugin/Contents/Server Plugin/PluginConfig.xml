@@ -11,7 +11,7 @@
     </Field>
     <Field id="separator0" type="separator"/>
     <Field id="apiKey" type="textfield" defaultValue=""
-           tooltip="Please enter your Thingspeak API Key (user key not your chann.">
+           tooltip="Please enter your Thingspeak API Key (user key not your channel key).">
         <Label>API Key:</Label>
     </Field>
     <Field id="logFileLocation" type="textfield" defaultValue="/Library/Application Support/Perceptive Automation/Indigo 7/Logs/Thingspeak Log.txt"
