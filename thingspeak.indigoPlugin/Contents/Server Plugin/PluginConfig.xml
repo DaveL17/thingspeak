@@ -1,89 +1,100 @@
 <?xml version="1.0"?>
 
-<!-- Be sure to add any new plugin prefs to kDefaultPluginPrefs in plugin.py -->
-
 <PluginConfig>
+
     <Field id="infoLabel0" type="label">
         <Label>Thingspeak Plugin - Developed by DaveL17</Label>
     </Field>
-    <Field id="space0" type="label">
-        <Label/>
+
+    <Field id="space00" type="label"/>
+
+    <Field id="space01" type="label" alignText="right">
+        <Label>Plugin Settings</Label>
     </Field>
-    <Field id="separator0" type="separator"/>
+
+	<Field id="simpleSeparator0" type="separator"/>
+
     <Field id="apiKey" type="textfield" defaultValue=""
            tooltip="Please enter your Thingspeak API Key (user key not your channel key).">
         <Label>API Key:</Label>
     </Field>
+
     <Field id="logFileLocation" type="textfield" defaultValue="/Library/Application Support/Perceptive Automation/Indigo 7/Logs/Thingspeak Log.txt"
            tooltip="Please enter the location where log files should be stored (full path and filename).">
         <Label>Log File Path:</Label>
     </Field>
+
     <Field id="devicePort" type="checkbox" defaultValue="false">
         <Label>Local Server:</Label>
         <Description fontSize="small">Check only if you are running a local Thingspeak server.</Description>
     </Field>
+
     <Field id="devicePortHelp" type="label" visibleBindingId="devicePort" visibleBindingValue="true">
         <Label>Please enter the IP address including the port number (default is port 3000.)</Label>
     </Field>
+
     <Field id="deviceIP" type="textfield" defaultValue="XXX.XXX.XXX.XXX:3000" visibleBindingId="devicePort" visibleBindingValue="true">
         <Label>Server IP:</Label>
     </Field>
+
     <Field id="space2" type="label">
         <Label/>
     </Field>
+
     <Field id="space3" type="label" alignText="right">
         <Label>Optional Settings:</Label>
     </Field>
+
     <Field id="separator1" type="separator"/>
+
     <Field id="locationSettingsLabel" type="label" alignWithControl="true" fontSize="small">
         <Label>These optional settings apply to all Thingspeak devices. Twitter will only work if you have linked your username via ThingTweet. See Thingspeak Apps on the Thingspeak website for more details.</Label>
     </Field>
+
     <Field id="latitude" type="textfield" defaultValue="0"
            tooltip="Please enter the latitude of your Indigo Server in degrees (decimal).">
         <Label>Latitude:</Label>
     </Field>
+
     <Field id="longitude" type="textfield" defaultValue="0"
            tooltip="Please enter the longitude of your Indigo Server in degrees (decimal).">
         <Label>Longitude:</Label>
     </Field>
+
     <Field id="elevation" type="textfield" defaultValue="0"
            tooltip="Please enter the elevation of your Indigo Server in whole meters (integer).">
         <Label>Elevation:</Label>
     </Field>
+
     <Field id="twitter" type="textfield" defaultValue=""
            tooltip="Please enter a username linked to ThingTweet.">
         <Label>Twitter ID:</Label>
     </Field>
-    <Field id="space4" type="label">
-        <Label/>
-    </Field>
-    <Field id="space5" type="label" alignText="right">
-        <Label>Plugin Update Notifications (optional):</Label>
-    </Field>
-    <Field id="separator2" type="separator"/>
-    <Field id="updaterEmailsEnabled" type="checkbox" defaultValue="false" tooltip="Enables (disables) email notifications.">
-        <Label/>
-        <Description>Enable update notifications</Description>
-    </Field>
-    <Field id="updaterEmail" type="textfield"  visibleBindingId="updaterEmailsEnabled" visibleBindingValue="true"
-           tooltip="Please enter the email address to receive notifications of updates to the Thingspeak plugin.">
-        <Label>Email address:</Label>
-    </Field>
-    <Field id="updateNotificationLabel" type="label" alignWithControl="true" fontSize="small" visibleBindingId="updaterEmailsEnabled" visibleBindingValue="true">
-        <Label>Enter an email address if you would like to be notified of updates to the plugin. This is optional. Unticking the checkbox will disable notifications.</Label>
-    </Field>
+
+    <!-- Notifications Template -->
+    <Template file="DLFramework/template_notifications.xml" />
+
     <Field id="space6" type="label">
         <Label/>
     </Field>
+
     <Field id="space7" type="label" alignText="right">
-        <Label>Debug Settings:</Label>
+        <Label>Debug Settings</Label>
     </Field>
+
     <Field id="separator3" type="separator"/>
-    <Field id="showDebugInfo" type="checkbox" defaultValue="false">
+
+    <Field id="displayDebugSettings" type="checkbox" defaultValue="false">
+        <Label>Display Settings:</Label>
+        <Description/>
+    </Field>
+
+    <Field id="showDebugInfo" type="checkbox" defaultValue="false" visibleBindingId="displayDebugSettings" visibleBindingValue="true">
         <Label/>
         <Description>Enable debug logging</Description>
     </Field>
-    <Field id="showDebugLevel" type="menu" defaultValue="Low" visibleBindingId="showDebugInfo" visibleBindingValue="true"
+
+    <Field id="showDebugLevel" type="menu" defaultValue="Low" visibleBindingId="displayDebugSettings" visibleBindingValue="true"
            tooltip="Controls the amount of debug information written to the log.">
         <Label>Debug level:</Label>
         <List>
@@ -92,12 +103,15 @@
             <Option value="3">High</Option>
         </List>
     </Field>
-    <Field id="space8" type="label" visibleBindingId="showDebugInfo" visibleBindingValue="true" fontSize="small">
-        <Label>Turn on debugging only when needed. Be careful when posting the output to the forums or other public places as it could expose sensitive information. Unticking the checkbox will disable debug logging.
 
-            Low=Minimal debugging.
-            Medium=All debug logging except sensitive information.
-            High=May contain sensitive information.
+    <Field id="space8" type="label" visibleBindingId="displayDebugSettings" visibleBindingValue="true" fontSize="small" alignWithControl="True">
+        <Label>Turn on debugging only when needed. Be careful when posting the output to the forums or other public places as it could expose sensitive information. Unticking the checkbox will disable debug logging.</Label>
+    </Field>
+
+    <Field id="space9" type="label" visibleBindingId="displayDebugSettings" visibleBindingValue="true" fontSize="mini" alignWithControl="True">
+        <Label>Low - Minimal debugging.
+Medium - All debug logging except sensitive information.
+High -  May contain sensitive information.
         </Label>
     </Field>
 

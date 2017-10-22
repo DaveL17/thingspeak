@@ -30,27 +30,42 @@ Credits
 
 """
 
-# TODO:
+# =================================== TO DO ===================================
 
+# TODO: If no Internet connection is present, the plugin will write log entry per heartbeat.  Best to sleep for a while before rechecking.
+
+# ================================== IMPORTS ==================================
+
+# Built-in modules
 import datetime as dt
-import indigoPluginUpdateChecker
 import os.path
-# import pydevd
 import requests
-import sys
 import time as t
 
+# Third-party modules
+from DLFramework import indigoPluginUpdateChecker
 try:
     import indigo
 except ImportError:
     pass
+try:
+    import pydevd
+except ImportError:
+    pass
 
-__author__    = "DaveL17"
-__build__     = ""
-__copyright__ = 'Copyright 2017 DaveL17'
-__license__   = "MIT"
+# My modules
+import DLFramework as dlf
+
+# =================================== HEADER ==================================
+
+__author__    = dlf.DLFramework.__author__
+__copyright__ = dlf.DLFramework.__copyright__
+__license__   = dlf.DLFramework.__license__
+__build__     = dlf.DLFramework.__build__
 __title__     = 'Thingspeak Plugin for Indigo Home Control'
-__version__   = '1.1.02'
+__version__   = '1.1.03'
+
+# =============================================================================
 
 kDefaultPluginPrefs = {
     u'configMenuTimeoutInterval': 15,            # How long to wait on a server timeout.
@@ -68,17 +83,7 @@ kDefaultPluginPrefs = {
 
 class Plugin(indigo.PluginBase):
     def __init__(self, pluginId, pluginDisplayName, pluginVersion, pluginPrefs):
-
         indigo.PluginBase.__init__(self, pluginId, pluginDisplayName, pluginVersion, pluginPrefs)
-
-        indigo.server.log(u"")
-        indigo.server.log(u"{0:=^130}".format(" Initializing New Plugin Session "))
-        indigo.server.log(u"{0:<31} {1}".format("Plugin name:", pluginDisplayName))
-        indigo.server.log(u"{0:<31} {1}".format("Plugin version:", pluginVersion))
-        indigo.server.log(u"{0:<31} {1}".format("Plugin ID:", pluginId))
-        indigo.server.log(u"{0:<31} {1}".format("Indigo version:", indigo.server.version))
-        indigo.server.log(u"{0:<31} {1}".format("Python version:", sys.version.replace('\n', '')))
-        indigo.server.log(u"{0:=^130}".format(""))
 
         self.debug          = pluginPrefs['showDebugInfo']
         self.debugLevel     = pluginPrefs['showDebugLevel']
@@ -88,13 +93,29 @@ class Plugin(indigo.PluginBase):
         updater_url         = "https://davel17.github.io/thingspeak/thingspeak_version.html"
         self.updater        = indigoPluginUpdateChecker.updateChecker(self, updater_url)
 
+        # ====================== Initialize DLFramework =======================
+
+        self.dlf            = dlf.DLFramework.Fogbert(self)
+
+        # Log pluginEnvironment information when plugin is first started
+        self.dlf.pluginEnvironment()
+
+        # Convert old debugLevel scale (low, medium, high) to new scale (1, 2, 3).
+        if not 0 < self.pluginPrefs.get('showDebugLevel', 1) <= 3:
+            self.pluginPrefs['showDebugLevel'] = self.dlf.convertDebugLevel(self.pluginPrefs['showDebugLevel'])
+
+        # =====================================================================
+
         # Create the log file location if it doesn't exist.
         split_path = os.path.split(self.logFile)
         if not os.path.exists(split_path[0]):
             self.debugLog(u"Log file location doesn't exist. Attempting to create it.")
             os.makedirs(split_path[0])
 
-        # pydevd.settrace('localhost', port=5678, stdoutToServer=True, stderrToServer=True, suspend=False)  # To enable remote PyCharm Debugging, uncomment this line.
+        # try:
+        #     pydevd.settrace('localhost', port=5678, stdoutToServer=True, stderrToServer=True, suspend=False)
+        # except:
+        #     pass
 
     def __del__(self):
 

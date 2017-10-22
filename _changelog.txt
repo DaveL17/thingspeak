@@ -1,3 +1,7 @@
+v1.1.03
+- Updated to include DLFramework.
+- Adds note to documentation that the plugin requires Internet access to function.
+
 v1.1.02
 - Fixes a couple bugs for Indigo 6 installations.
 
