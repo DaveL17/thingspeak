@@ -3,7 +3,11 @@
 <PluginConfig>
 
     <Field id="infoLabel0" type="label">
-        <Label>Thingspeak Plugin - Developed by DaveL17</Label>
+        <Label>Thingspeak Plugin</Label>
+    </Field>
+
+    <Field id="infoLabel1" type="label" fontSize="small">
+        <Label>Developed by DaveL17</Label>
     </Field>
 
     <Field id="space00" type="label"/>
@@ -37,9 +41,7 @@
         <Label>Server IP:</Label>
     </Field>
 
-    <Field id="space2" type="label">
-        <Label/>
-    </Field>
+    <Field id="space2" type="label"/>
 
     <Field id="space3" type="label" alignText="right">
         <Label>Optional Settings:</Label>
@@ -74,9 +76,7 @@
     <!-- Notifications Template -->
     <Template file="DLFramework/template_notifications.xml" />
 
-    <Field id="space6" type="label">
-        <Label/>
-    </Field>
+    <Field id="space6" type="label"/>
 
     <Field id="space7" type="label" alignText="right">
         <Label>Debug Settings</Label>

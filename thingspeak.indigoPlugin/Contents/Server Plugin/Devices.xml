@@ -6,13 +6,13 @@
 
         <ConfigUI>
 
-            <Field id="space0" type="label">
-                <Label/>
-            </Field>
+            <Field id="space0" type="label"/>
+
             <Field id="channelList" type="menu">
                 <Label>Channel</Label>
                 <List class="self" filter="" method="channelListGenerator" dynamicReload="true"/>
             </Field>
+
             <Field id="devUploadInterval" type="menu" defaultValue="900" tooltip="How frequently would you would like to upload data to Thingspeak?">
                 <Label>Upload Interval:</Label>
                 <List>
@@ -26,15 +26,17 @@
                     <Option value="86400">1 Day</Option>
                 </List>
             </Field>
+
             <Field id="tweet" type="textfield" defaultValue="">
                 <Label>Tweet:</Label>
             </Field>
+
             <Field id="tweetLabel" type="label" alignWithControl="true" fontSize="small">
                 <Label>Tweet will be posted if you have a linked Twitter username set in the plugin's main preferences.</Label>
             </Field>
-            <Field id="space1" type="label">
-                <Label/>
-            </Field>
+
+            <Field id="space1" type="label"/>
+
             <Field id="simpleSeparator1" type="separator"/>
 
             <!-- Channel field 1 -->
@@ -43,10 +45,12 @@
                 <List class="self" filter="" method="listGenerator" dynamicReload="true"/>
                 <CallbackMethod>devStateGenerator1</CallbackMethod>
             </Field>
+
             <Field id="thing1State" type="menu" defaultValue="None">
                 <Label>Value to chart:</Label>
                 <List class="self" filter="" method="devStateGenerator1" dynamicReload="true"/>
             </Field>
+
             <Field id="simpleSeparator2" type="separator"/>
 
             <!-- Channel field 2 -->
@@ -55,10 +59,12 @@
                 <List class="self" filter="" method="listGenerator" dynamicReload="true"/>
                 <CallbackMethod>devStateGenerator2</CallbackMethod>
             </Field>
+
             <Field id="thing2State" type="menu" defaultValue="None">
                 <Label>Value to chart:</Label>
                 <List class="self" filter="" method="devStateGenerator2" dynamicReload="true"/>
             </Field>
+
             <Field id="simpleSeparator3" type="separator"/>
 
             <!-- Channel field 3 -->
@@ -67,10 +73,12 @@
                 <List class="self" filter="" method="listGenerator" dynamicReload="true"/>
                 <CallbackMethod>devStateGenerator3</CallbackMethod>
             </Field>
+
             <Field id="thing3State" type="menu" defaultValue="None">
                 <Label>Value to chart:</Label>
                 <List class="self" filter="" method="devStateGenerator3" dynamicReload="true"/>
             </Field>
+
             <Field id="simpleSeparator4" type="separator"/>
 
             <!-- Channel field 4 -->
@@ -79,10 +87,12 @@
                 <List class="self" filter="" method="listGenerator" dynamicReload="true"/>
                 <CallbackMethod>devStateGenerator4</CallbackMethod>
             </Field>
+
             <Field id="thing4State" type="menu" defaultValue="None">
                 <Label>Value to chart:</Label>
                 <List class="self" filter="" method="devStateGenerator4" dynamicReload="true"/>
             </Field>
+
             <Field id="simpleSeparator5" type="separator"/>
 
             <!-- Channel field 5 -->
@@ -91,10 +101,12 @@
                 <List class="self" filter="" method="listGenerator" dynamicReload="true"/>
                 <CallbackMethod>devStateGenerator5</CallbackMethod>
             </Field>
+
             <Field id="thing5State" type="menu" defaultValue="None">
                 <Label>Value to chart:</Label>
                 <List class="self" filter="" method="devStateGenerator5" dynamicReload="true"/>
             </Field>
+
             <Field id="simpleSeparator6" type="separator"/>
 
             <!-- Channel field 6 -->
@@ -103,10 +115,12 @@
                 <List class="self" filter="" method="listGenerator" dynamicReload="true"/>
                 <CallbackMethod>devStateGenerator6</CallbackMethod>
             </Field>
+
             <Field id="thing6State" type="menu" defaultValue="None">
                 <Label>Value to chart:</Label>
                 <List class="self" filter="" method="devStateGenerator6" dynamicReload="true"/>
             </Field>
+
             <Field id="simpleSeparator7" type="separator"/>
 
             <!-- Channel field 7 -->
@@ -115,10 +129,12 @@
                 <List class="self" filter="" method="listGenerator" dynamicReload="true"/>
                 <CallbackMethod>devStateGenerator7</CallbackMethod>
             </Field>
+
             <Field id="thing7State" type="menu" defaultValue="None">
                 <Label>Value to chart:</Label>
                 <List class="self" filter="" method="devStateGenerator7" dynamicReload="true"/>
             </Field>
+
             <Field id="simpleSeparator8" type="separator"/>
 
             <!-- Channel field 8 -->
@@ -127,10 +143,12 @@
                 <List class="self" filter="" method="listGenerator" dynamicReload="true"/>
                 <CallbackMethod>devStateGenerator8</CallbackMethod>
             </Field>
+
             <Field id="thing8State" type="menu" defaultValue="None">
                 <Label>Value to chart:</Label>
                 <List class="self" filter="" method="devStateGenerator8" dynamicReload="true"/>
             </Field>
+
         </ConfigUI>
 
         <States>
@@ -139,86 +157,103 @@
                 <TriggerLabel>Channel ID</TriggerLabel>
                 <ControlPageLabel>Channel ID</ControlPageLabel>
             </State>
+
             <State id="status">
                 <ValueType>string</ValueType>
                 <TriggerLabel>Channel Status</TriggerLabel>
                 <ControlPageLabel>Channel Status</ControlPageLabel>
             </State>
+
             <State id="created_at">
                 <ValueType>string</ValueType>
                 <TriggerLabel>Creation Time</TriggerLabel>
                 <ControlPageLabel>Creation Time</ControlPageLabel>
             </State>
+
             <State id="elevation">
                 <ValueType>float</ValueType>
                 <TriggerLabel>Elevation</TriggerLabel>
                 <ControlPageLabel>Elevation</ControlPageLabel>
             </State>
+
             <State id="entry_id">
                 <ValueType>integer</ValueType>
                 <TriggerLabel>Entry ID</TriggerLabel>
                 <ControlPageLabel>Entry ID</ControlPageLabel>
             </State>
+
             <State id="latitude">
                 <ValueType>float</ValueType>
                 <TriggerLabel>Latitude</TriggerLabel>
                 <ControlPageLabel>Latitude</ControlPageLabel>
             </State>
+
             <State id="longitude">
                 <ValueType>float</ValueType>
                 <TriggerLabel>Longitude</TriggerLabel>
                 <ControlPageLabel>Longitude</ControlPageLabel>
             </State>
+
             <State id="thingState">
                 <ValueType>Boolean</ValueType>
                 <TriggerLabel>Thingspeak Thing</TriggerLabel>
                 <ControlPageLabel>Thingspeak Thing</ControlPageLabel>
             </State>
+
             <State id="thing1">
                 <ValueType>Float</ValueType>
                 <TriggerLabel>Thingspeak Thing 1</TriggerLabel>
                 <ControlPageLabel>Thingspeak Thing 1</ControlPageLabel>
             </State>
+
             <State id="thing2">
                 <ValueType>Float</ValueType>
                 <TriggerLabel>Thingspeak Thing 2</TriggerLabel>
                 <ControlPageLabel>Thingspeak Thing 2</ControlPageLabel>
             </State>
+
             <State id="thing3">
                 <ValueType>Float</ValueType>
                 <TriggerLabel>Thingspeak Thing 3</TriggerLabel>
                 <ControlPageLabel>Thingspeak Thing 3</ControlPageLabel>
             </State>
+
             <State id="thing4">
                 <ValueType>Float</ValueType>
                 <TriggerLabel>Thingspeak Thing 4</TriggerLabel>
                 <ControlPageLabel>Thingspeak Thing 4</ControlPageLabel>
             </State>
+
             <State id="thing5">
                 <ValueType>Float</ValueType>
                 <TriggerLabel>Thingspeak Thing 5</TriggerLabel>
                 <ControlPageLabel>Thingspeak Thing 5</ControlPageLabel>
             </State>
+
             <State id="thing6">
                 <ValueType>Float</ValueType>
                 <TriggerLabel>Thingspeak Thing 6</TriggerLabel>
                 <ControlPageLabel>Thingspeak Thing 6</ControlPageLabel>
             </State>
+
             <State id="thing7">
                 <ValueType>Float</ValueType>
                 <TriggerLabel>Thingspeak Thing 7</TriggerLabel>
                 <ControlPageLabel>Thingspeak Thing 7</ControlPageLabel>
             </State>
+
             <State id="thing8">
                 <ValueType>Float</ValueType>
                 <TriggerLabel>Thingspeak Thing 8</TriggerLabel>
                 <ControlPageLabel>Thingspeak Thing 8</ControlPageLabel>
             </State>
+
             <State id="thing8">
                 <ValueType>Float</ValueType>
                 <TriggerLabel>Thingspeak Thing 8</TriggerLabel>
                 <ControlPageLabel>Thingspeak Thing 8</ControlPageLabel>
             </State>
+
         </States>
 
         <UiDisplayStateId>thingState</UiDisplayStateId>

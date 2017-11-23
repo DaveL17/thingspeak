@@ -1,3 +1,7 @@
+v1.1.04
+- Moves documentation to wiki
+- IPS configuration
+
 v1.1.03
 - Updated to include DLFramework.
 - Adds note to documentation that the plugin requires Internet access to function.
