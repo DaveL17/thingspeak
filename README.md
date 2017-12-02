@@ -1,3 +1,9 @@
-# Thingspeak Plugin
+![Thingspeak Logo](img/img_thingspeakLogo.png)
 
-An Indigo plugin for connecting a Thingspeak server to Indigo.
+The Thingspeak plugin allows users to create Indigo Home Control Server 
+devices which provide a facility to upload Indigo data to Thingspeak for 
+charting and other purposes. 
+
+Each individual device can contain up to eight data elements for upload. 
+There is no limit to the number of Thingspeak Channels that the plugin 
+can support.
