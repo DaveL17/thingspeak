@@ -1,4 +1,4 @@
-![Thingspeak Logo](img/img_thingspeakLogo.png)
+![Thingspeak Logo](https://github.com/DaveL17/thingspeak/wiki/img/img_thingspeakLogo.png)
 
 The Thingspeak plugin allows users to create Indigo Home Control Server 
 devices which provide a facility to upload Indigo data to Thingspeak for 
