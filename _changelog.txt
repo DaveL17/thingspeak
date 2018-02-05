@@ -1,3 +1,8 @@
+v1.1.05
+- Updates plist link to wiki.
+- Updates plugin update checker to use curl to overcome outdated security of
+  Apple's Python install.
+
 v1.1.04
 - Moves documentation to wiki
 - IPS configuration

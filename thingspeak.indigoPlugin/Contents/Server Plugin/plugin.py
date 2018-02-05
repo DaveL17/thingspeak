@@ -63,7 +63,7 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__     = 'Thingspeak Plugin for Indigo Home Control'
-__version__   = '1.1.04'
+__version__   = '1.1.05'
 
 # =============================================================================
 
@@ -90,7 +90,7 @@ class Plugin(indigo.PluginBase):
         self.devicesAndVariablesList = []
         self.logFileDate    = pluginPrefs.get('logFileDate', "1970-01-01")
         self.logFile        = pluginPrefs.get('logFileLocation', "/Library/Application Support/Perceptive Automation/Indigo {0}/Logs/Thingspeak Log.txt".format(indigo.server.version[0]))
-        updater_url         = "https://davel17.github.io/thingspeak/thingspeak_version.html"
+        updater_url         = "https://raw.githubusercontent.com/DaveL17/thingspeak/master/thingspeak_version.html"
         self.updater        = indigoPluginUpdateChecker.updateChecker(self, updater_url)
 
         # ====================== Initialize DLFramework =======================
