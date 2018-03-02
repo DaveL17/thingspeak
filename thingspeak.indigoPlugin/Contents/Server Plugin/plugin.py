@@ -32,13 +32,14 @@ Credits
 
 # =================================== TO DO ===================================
 
-# TODO: If no Internet connection is present, the plugin will write log entry per heartbeat.  Best to sleep for a while before rechecking.
 
 # ================================== IMPORTS ==================================
 
 # Built-in modules
+from dateutil.parser import parse as du_parse
 import datetime as dt
 import os.path
+import pytz
 import requests
 import time as t
 
@@ -63,7 +64,7 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__     = 'Thingspeak Plugin for Indigo Home Control'
-__version__   = '1.1.05'
+__version__   = '1.1.06'
 
 # =============================================================================
 
@@ -124,6 +125,7 @@ class Plugin(indigo.PluginBase):
     # Indigo Methods ==========================================================
 
     def closedPrefsConfigUi(self, valuesDict, userCancelled):
+        """ """
 
         self.debugLog(u"closedPrefsConfigUi() called.")
 
@@ -145,6 +147,7 @@ class Plugin(indigo.PluginBase):
         self.debugLevel     = self.pluginPrefs.get('showDebugLevel', 1)
 
     def deviceStartComm(self, dev):
+        """ """
 
         self.debugLog(u"deviceStartComm() called. Device: {0}".format(dev.name))
         dev.stateListOrDisplayStateIdChanged()
@@ -152,13 +155,13 @@ class Plugin(indigo.PluginBase):
         dev.updateStateImageOnServer(indigo.kStateImageSel.SensorOff)
 
     def deviceStopComm(self, dev):
-
+        """ """
         self.debugLog(u"deviceStopComm() called. Device: {0}".format(dev.name))
         dev.updateStateOnServer('thingState', value=False, uiValue=u"disabled")
         dev.updateStateImageOnServer(indigo.kStateImageSel.SensorOff)
 
     def getDeviceConfigUiValues(self, valuesDict, typeId, devId):
-
+        """ """
         self.debugLog(u"getDeviceConfigUiValues() called.")
 
         self.devicesAndVariablesList = []
@@ -177,12 +180,11 @@ class Plugin(indigo.PluginBase):
     #     return valuesDict
 
     def runConcurrentThread(self):
-
+        """ """
         self.debugLog(u"runConcurrentThread() initiated.")
 
         try:
             while True:
-                # self.sleep(1)
                 self.updater.checkVersionPoll()
                 self.checkDebugLogFile()
                 self.encodeValueDicts()
@@ -195,7 +197,7 @@ class Plugin(indigo.PluginBase):
             pass
 
     def startup(self):
-
+        """ """
         self.debugLog(u"startup() method called.")
 
         if self.debug and self.debugLevel >= 3:
@@ -204,90 +206,97 @@ class Plugin(indigo.PluginBase):
         self.updater.checkVersionPoll()  # See if there is an update and whether the user wants to be notified.
 
     def shutdown(self):
-
+        """ """
         self.debugLog(u"shutdown() method called.")
 
         for dev in indigo.devices.iter('self'):
             dev.updateStateImageOnServer(indigo.kStateImageSel.SensorOff)
 
     def validatePrefsConfigUi(self, valuesDict):
-
+        """ """
         self.debugLog(u"validatePrefsConfigUi() called.")
 
         error_msg_dict = indigo.Dict()
 
+        # ============================= API Key ===============================
+        # Key must be 16 characters in length
+        if len(valuesDict['apiKey']) not in (0, 16):
+            error_msg_dict['apiKey'] = u"The API Key must be 16 characters long."
+            error_msg_dict['showAlertText'] = u"API Key Error:\n\nThe API Key must be 16 characters long and cannot contain spaces."
+            return False, valuesDict, error_msg_dict
+
+        # Test key against ThingSpeak service
         try:
-            try:
-                if len(valuesDict['apiKey']) not in (0, 16):
-                    raise Exception
-            except ValueError:
-                error_msg_dict['apiKey'] = u"The API Key must be 16 characters long."
-                error_msg_dict['showAlertText'] = u"API Key Error:\n\nThe API Key must be 16 characters long and cannot contain spaces."
-                return False, valuesDict, error_msg_dict
+            ts_ip = "https://api.thingspeak.com/channels.json?api_key={0}".format(valuesDict['apiKey'])
+            response = requests.get(ts_ip, timeout=1.50)
 
-            # Test latitude and longitude. Must be integers or floats. Can be negative.
-            try:
-                float(valuesDict['latitude'])
-            except ValueError:
-                error_msg_dict['latitude'] = u"Please enter a number (positive, negative or zero)."
-                error_msg_dict['showAlertText'] = u"Latitude Error:\n\nThingspeak requires latitude to be expressed as a number. It can be positive, negative or zero."
-                valuesDict['latitude'] = 0
-                return False, valuesDict, error_msg_dict
+            if response.status_code == 401:
+                raise ValueError
 
-            try:
-                float(valuesDict['longitude'])
-            except ValueError:
-                error_msg_dict['longitude'] = u"Please enter a number (positive, negative or zero)."
-                error_msg_dict['showAlertText'] = u"Longitude Error:\n\nThingspeak requires longitude to be expressed as a number. It can be positive, negative or zero."
-                valuesDict['longitude'] = 0
-                return False, valuesDict, error_msg_dict
+        except requests.exceptions.Timeout:
+            indigo.server.log(u"Unable to confirm accuracy of API Key with the ThingSpeak service.")
 
-            # Test elevation. Must be an integer (can not be a float. Can be negative.
-            try:
-                int(valuesDict['elevation'])
-            except ValueError:
-                error_msg_dict['elevation'] = u"Please enter a whole number integer (positive, negative or zero)."
-                error_msg_dict['showAlertText'] = u"Elevation Error:\n\nThingspeak requires elevation to be expressed as a whole number integer. It can be positive, negative or zero."
-                valuesDict['elevation'] = 0
-                return False, valuesDict, error_msg_dict
+        except ValueError:
+            error_msg_dict['apiKey'] = u"Invalid API Key"
+            error_msg_dict['showAlertText'] = u"API Key Error:\n\nThingSpeak rejected your API Key as invalid. Please ensure that your key is entered correctly."
+            return False, valuesDict, error_msg_dict
 
-            if "." in valuesDict['elevation']:
-                error_msg_dict['elevation'] = u"Please enter a whole number integer (positive, negative or zero)."
-                error_msg_dict['showAlertText'] = u"Elevation Error:\n\nThingspeak requires elevation to be expressed as a whole number integer. It can be positive, negative or zero."
-                valuesDict['elevation'] = 0
-                return False, valuesDict, error_msg_dict
+        # ======================== Latitude / Longitude =======================
+        # Must be integers or floats. Can be negative.
+        try:
+            float(valuesDict['latitude'])
+        except ValueError:
+            error_msg_dict['latitude'] = u"Please enter a number (positive, negative or zero)."
+            error_msg_dict['showAlertText'] = u"Latitude Error:\n\nThingspeak requires latitude to be expressed as a number. It can be positive, negative or zero."
+            valuesDict['latitude'] = 0.0
+            return False, valuesDict, error_msg_dict
 
-            # Test plugin update notification settings.
-            if valuesDict['updaterEmailsEnabled'] and not valuesDict['updaterEmail']:
-                error_msg_dict['updaterEmail'] = u"Please supply a valid email address."
-                error_msg_dict['showAlertText'] = u"Updater Email Error:\n\nThe plugin requires a valid email address in order to notify you of plugin updates."
-                return False, valuesDict, error_msg_dict
+        try:
+            float(valuesDict['longitude'])
+        except ValueError:
+            error_msg_dict['longitude'] = u"Please enter a number (positive, negative or zero)."
+            error_msg_dict['showAlertText'] = u"Longitude Error:\n\nThingspeak requires longitude to be expressed as a number. It can be positive, negative or zero."
+            valuesDict['longitude'] = 0.0
+            return False, valuesDict, error_msg_dict
 
-            elif valuesDict['updaterEmailsEnabled'] and "@" not in valuesDict['updaterEmail']:
-                error_msg_dict['updaterEmail'] = u"Please supply a valid email address."
-                error_msg_dict['showAlertText'] = u"Updater Email Error:\n\nThe plugin requires a valid email address in order to notify you of plugin updates (the email address needs " \
-                                                  u"an '@' symbol."
-                return False, valuesDict, error_msg_dict
+        # ============================= Elevation =============================
+        # Must be an integer (can not be a float. Can be negative.
+        try:
+            int(valuesDict['elevation'])
+        except ValueError:
+            error_msg_dict['elevation'] = u"Please enter a whole number integer (positive, negative or zero)."
+            error_msg_dict['showAlertText'] = u"Elevation Error:\n\nThingspeak requires elevation to be expressed as a whole number integer. It can be positive, negative or zero."
+            valuesDict['elevation'] = 0
+            return False, valuesDict, error_msg_dict
 
-            # Test log file location setting.
-            if not valuesDict['logFileLocation'] or valuesDict['logFileLocation'].isspace():
-                error_msg_dict['logFileLocation'] = u"Please supply a valid log file location."
-                error_msg_dict['showAlertText'] = u"Log File Location Error:\n\nThe plugin requires a valid location to save log data."
-                return False, valuesDict, error_msg_dict
+        if "." in valuesDict['elevation']:
+            error_msg_dict['elevation'] = u"Please enter a whole number integer (positive, negative or zero)."
+            error_msg_dict['showAlertText'] = u"Elevation Error:\n\nThingspeak requires elevation to be expressed as a whole number integer. It can be positive, negative or zero."
+            valuesDict['elevation'] = 0
+            return False, valuesDict, error_msg_dict
 
-            # Create the path to the log file location if it doesn't exist yet.
-            split_path = os.path.split(valuesDict['logFileLocation'])
-            if not os.path.exists(split_path[0]):
-                os.makedirs(split_path[0])
+        # =========================== Notifications ===========================
+        if valuesDict['updaterEmailsEnabled'] and not valuesDict['updaterEmail']:
+            error_msg_dict['updaterEmail'] = u"Please supply a valid email address."
+            error_msg_dict['showAlertText'] = u"Updater Email Error:\n\nThe plugin requires a valid email address in order to notify you of plugin updates."
+            return False, valuesDict, error_msg_dict
 
-        except Exception as error:
+        elif valuesDict['updaterEmailsEnabled'] and "@" not in valuesDict['updaterEmail']:
+            error_msg_dict['updaterEmail'] = u"Please supply a valid email address."
+            error_msg_dict['showAlertText'] = u"Updater Email Error:\n\nThe plugin requires a valid email address in order to notify you of plugin updates (the email address needs " \
+                                              u"an '@' symbol."
+            return False, valuesDict, error_msg_dict
 
-            f = open(self.logFile, 'a')
-            f.write("{0} - validatePrefsConfigUi error: {1}\n".format(dt.datetime.time(dt.datetime.now()), error))
-            f.close()
+        # ============================= Log File ==============================
+        if not valuesDict['logFileLocation'] or valuesDict['logFileLocation'].isspace():
+            error_msg_dict['logFileLocation'] = u"Please supply a valid log file location."
+            error_msg_dict['showAlertText'] = u"Log File Location Error:\n\nThe plugin requires a valid location to save log data."
+            return False, valuesDict, error_msg_dict
 
-            self.debugLog(u"Exception in validatePrefsConfigUi tests: {0}".format(error))
-            pass
+        # Create the path to the log file location if it doesn't exist yet.
+        split_path = os.path.split(valuesDict['logFileLocation'])
+        if not os.path.exists(split_path[0]):
+            os.makedirs(split_path[0])
 
         return True, valuesDict
 
@@ -345,20 +354,20 @@ class Plugin(indigo.PluginBase):
         if response == 200:
             indigo.server.log(u"Channel successfully deleted.".format(response))
         else:
-            self.errorLog(u"Problem clearing channel data.")
+            self.errorLog(u"Problem deleting channel data.")
 
         return True
 
-    def channelCreate(self, valuesDict, typeId):
-        """ The channelCreate() method is called when a user selects 'Create a
-        Channel' from the plugin menu. It is used to create a new channel on
-        Thingspeak. """
+    def getParms(self, valuesDict):
+        """ """
 
-        self.debugLog(u'channelCreate()')
+        # Thingspeak requires a string representation of the boolean value.
+        if valuesDict['public_flag']:
+            public_flag = 'true'
+        else:
+            public_flag = 'false'
 
-        url = "/channels.json"
-
-        parms = {'api_key':     self.pluginPrefs.get('apiKey', ''),    # User's API key. This is different from a channel API key, and can be found in your profile page. (required).
+        parms = {'api_key':     self.pluginPrefs.get('apiKey', ''),    # User's API key. This is different from a channel API key, and can be found in account profile page. (required).
                  'elevation':   self.pluginPrefs.get('elevation', 0),  # Elevation in meters (optional)
                  'latitude':    self.pluginPrefs.get('latitude', 0),   # Latitude in degrees (optional)
                  'longitude':   self.pluginPrefs.get('longitude', 0),  # Longitude in degrees (optional)
@@ -373,10 +382,23 @@ class Plugin(indigo.PluginBase):
                  'field8':      valuesDict['field8'],                  # Field 8 name (optional)
                  'metadata':    valuesDict['metadata'],                # Metadata for the channel, which can include JSON, XML, or any other data (optional)
                  'name':        valuesDict['name'],                    # Name of the channel (optional)
-                 'public_flag': valuesDict['public_flag'],             # Whether the channel is public, default false (optional)
+                 'public_flag': public_flag,                           # Whether the channel is public, default 'false' (optional, string required if present)
                  'tags':        valuesDict['tags'],                    # Comma-separated list of tags (optional)
                  'url':         valuesDict['url'],                     # Web page URL for the channel (optional)
                  }
+
+        return parms
+
+    def channelCreate(self, valuesDict, typeId):
+        """ The channelCreate() method is called when a user selects 'Create a
+        Channel' from the plugin menu. It is used to create a new channel on
+        Thingspeak. """
+
+        self.debugLog(u'channelCreate()')
+
+        url = "/channels.json"
+
+        parms = self.getParms(valuesDict)
 
         response, response_dict = self.sendToThingspeak('post', url, parms)
 
@@ -429,31 +451,7 @@ class Plugin(indigo.PluginBase):
             error_msg_dict['showAlertText'] = u"Update Channel Info Error:\n\nYou must select a channel to update."
             return False, valuesDict, error_msg_dict
 
-        # Thingspeak requires a string representation of the boolean value.
-        if valuesDict['public_flag']:
-            public_flag = 'true'
-        else:
-            public_flag = 'false'
-
-        parms = {'api_key':     self.pluginPrefs.get('apiKey', ''),    # User's API key. This is different from a channel API key, and can be found in your profile page. (required).
-                 'elevation':   self.pluginPrefs.get('elevation', 0),  # Elevation in meters (optional)
-                 'latitude':    self.pluginPrefs.get('latitude', 0),   # Latitude in degrees (optional)
-                 'longitude':   self.pluginPrefs.get('longitude', 0),  # Longitude in degrees (optional)
-                 'description': valuesDict['description'],             # Description of the channel (optional)
-                 'field1':      valuesDict['field1'],                  # Field 1 name (optional)
-                 'field2':      valuesDict['field2'],                  # Field 2 name (optional)
-                 'field3':      valuesDict['field3'],                  # Field 3 name (optional)
-                 'field4':      valuesDict['field4'],                  # Field 4 name (optional)
-                 'field5':      valuesDict['field5'],                  # Field 5 name (optional)
-                 'field6':      valuesDict['field6'],                  # Field 6 name (optional)
-                 'field7':      valuesDict['field7'],                  # Field 7 name (optional)
-                 'field8':      valuesDict['field8'],                  # Field 8 name (optional)
-                 'metadata':    valuesDict['metadata'],                # Metadata for the channel, which can include JSON, XML, or any other data (optional)
-                 'name':        valuesDict['name'],                    # Name of the channel (optional)
-                 'public_flag': public_flag,                           # Whether the channel is public, default false (optional)
-                 'tags':        valuesDict['tags'],                    # Comma-separated list of tags (optional)
-                 'url':         valuesDict['url'],                     # Web page URL for the channel (optional)
-                 }
+        parms = self.getParms(valuesDict)
 
         # Get rid of empty key/value pairs so we don't overwrite existing information.
         for key in parms.keys():
@@ -478,7 +476,8 @@ class Plugin(indigo.PluginBase):
 
         # self.debugLog(u"checkDebugLogFile() called.")  # This is commented out as it will appear in the log every 2 seconds.
 
-        log      = dt.datetime.strptime(self.pluginPrefs.get('logFileDate', "1970-01-01"), "%Y-%m-%d")
+        log_file_date = self.pluginPrefs.get('logFileDate', "1970-01-01")
+        log      = du_parse(log_file_date)
         log_date = dt.datetime.date(log)
         now      = dt.datetime.now()
         today    = dt.datetime.date(now)
@@ -523,6 +522,12 @@ class Plugin(indigo.PluginBase):
         response, response_dict = self.sendToThingspeak('post', url, parms)
 
         # Process the results.  Thingspeak will respond with a "0" if something went wrong.
+        if response == 0:
+            indigo.server.log(u"Something went wrong.")
+            indigo.server.log(u"{0}".format(response_dict))
+
+            return False
+
         if response == 200:
 
             dev.updateStateOnServer('channel_id', value=int(response_dict.get('channel_id', "0")))
@@ -547,8 +552,9 @@ class Plugin(indigo.PluginBase):
 
                 # time_delta_to_utc formula thanks to Karl (kw123).
                 time_delta_to_utc = (int(t.mktime(dt.datetime.utcfromtimestamp(time + 10).timetuple()) - time) / 100) * 100
-                utc_obj           = dt.datetime.strptime(response_dict['created_at'], '%Y-%m-%dT%H:%M:%SZ')
-                local_time        = str(utc_obj - dt.timedelta(seconds=time_delta_to_utc))
+                utc_obj = du_parse(response_dict['created_at'])
+
+                local_time = str(utc_obj - dt.timedelta(seconds=time_delta_to_utc))
                 dev.updateStateOnServer('created_at', value=local_time)
             else:
                 dev.updateStateOnServer('created_at', value=u"Unknown")
@@ -783,12 +789,12 @@ class Plugin(indigo.PluginBase):
             elif dev.enabled:
 
                 # For each device, see if it is time for an update
-                last_update = dev.states['created_at']
+                last_update = dev.states.get('created_at', '1970-01-01 00:00:00')
                 if last_update == '':
                     last_update = '1970-01-01 00:00:00'
-                last_update = dt.datetime.strptime(last_update, '%Y-%m-%d %H:%M:%S')
+                last_update = du_parse(last_update)
 
-                delta = dt.datetime.now() - last_update
+                delta = dt.datetime.now().replace(tzinfo=pytz.utc) - last_update.replace(tzinfo=pytz.utc)
                 delta = int(delta.total_seconds())
 
                 if delta > int(dev.pluginProps['devUploadInterval']):
@@ -812,8 +818,7 @@ class Plugin(indigo.PluginBase):
                     if not api_key:
                         return
 
-                    for v in range(8):
-                        v += 1
+                    for v in range(1, 9):
                         thing_str       = 'thing{0}'.format(v)
                         thing_state_str = 'thing{0}State'.format(v)
 
@@ -879,7 +884,9 @@ class Plugin(indigo.PluginBase):
                     except Exception as error:
 
                         f = open(self.logFile, 'a')
-                        f.write("{0} - Curl Return Code: {1}".format(dt.datetime.time(dt.datetime.now()), error))
+                        f.write("{0} - Curl Return Error: {1}".format(dt.datetime.time(dt.datetime.now()), error))
+                        f.write("{0} - Curl Return Code: {1}".format(dt.datetime.time(dt.datetime.now()), response))
+                        f.write("{0} - Curl Response Dict: {1}".format(dt.datetime.time(dt.datetime.now()), response_dict))
                         f.close()
 
                         self.errorLog(unicode(error))
@@ -987,8 +994,15 @@ class Plugin(indigo.PluginBase):
 
         except requests.exceptions.ConnectionError:
             self.errorLog(u"Unable to reach host. Will continue to attempt connection.")
+
+            # Run a ping attempt until Internet comes back online
+            while response != 0:
+                response = os.system("/sbin/ping -c 1 google.com")
+                self.sleep(30)
+
             return response_code, response_dict
 
+        # ThingSpeak doesn't respond
         except requests.exceptions.Timeout:
             self.errorLog(u"Host server timeout. Will continue to retry.")
             return response_code, response_dict

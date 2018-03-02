@@ -1,3 +1,9 @@
+v1.1.06
+- Improves validation of API Key by reaching out to ThingSpeak to confirm
+  it's valid.
+- Improves handling of datetime objects when tzinfo format changes.
+- Improves handling of Internet loss.
+
 v1.1.05
 - Updates plist link to wiki.
 - Updates plugin update checker to use curl to overcome outdated security of
