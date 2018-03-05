@@ -6,14 +6,14 @@
     	<CallbackMethod>checkPluginVersion</CallbackMethod>
     </MenuItem>
 
-    <MenuItem id="devKillAllComms">
+    <MenuItem id="commsKillAll">
         <Name>Disable All Devices</Name>
-        <CallbackMethod>devKillAllComms</CallbackMethod>
+        <CallbackMethod>commsKillAll</CallbackMethod>
     </MenuItem>
 
-    <MenuItem id="devUnkillAllComms">
+    <MenuItem id="commsUnkillAll">
         <Name>Enable All Devices</Name>
-        <CallbackMethod>devUnkillAllComms</CallbackMethod>
+        <CallbackMethod>commsUnkillAll</CallbackMethod>
     </MenuItem>
 
     <MenuItem id="toggleDebug">

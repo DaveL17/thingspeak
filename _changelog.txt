@@ -1,3 +1,10 @@
+v1.1.07
+- Fixes bugs in plugin configuration validation.
+- Plugin menu option to "Upload Data Now" now works regardless of the next
+  scheduled update.
+- Expands use of DLFramework.
+- Refines logging and exception handling.
+
 v1.1.06
 - Improves validation of API Key by reaching out to ThingSpeak to confirm
   it's valid.
@@ -15,7 +22,8 @@ v1.1.04
 
 v1.1.03
 - Updated to include DLFramework.
-- Adds note to documentation that the plugin requires Internet access to function.
+- Adds note to documentation that the plugin requires Internet access to
+  function.
 
 v1.1.02
 - Fixes a couple bugs for Indigo 6 installations.
@@ -29,12 +37,15 @@ one at a time.
 - Adds a plugin menu tool to create a new Thingspeak channel.
 - Adds a plugin menu tool to update an existing Thingspeak channel.
 - Adds a plugin menu tool to list all existing Thingspeak channels.
-- Adds a plugin menu tool to clear all data from an existing Thingspeak channel.
+- Adds a plugin menu tool to clear all data from an existing Thingspeak
+  channel.
 - Adds plugin configuration item for the Thingspeak API Key.
 - Adds Thingspeak channel ID to the address field in the Indigo Device UI pane.
-- Changes device configuration to use a channel picker rather than having to enter api key.
+- Changes device configuration to use a channel picker rather than having to
+  enter api key.
 - Changes device configuration to allow each device to update on its own time
-  table. Note that the update time won't be precise but will be within 2-3 seconds.
+  table. Note that the update time won't be precise but will be within 2-3
+  seconds.
 - Adds Twitter integration.
 - Increments Python requirement to Python 2.6.
 - Converts from using subprocess module to requests module.
@@ -88,8 +99,8 @@ v0.7.5
 - Adds MenuItems.xml including toggle debugging and check for updates now.
 
 v0.7.3
-- Fixes a problem with plugin package naming structure that can cause problems in some
-  installations.
+- Fixes a problem with plugin package naming structure that can cause problems
+  in some installations.
 
 v0.7.2
 - Adds plugin update notifications.
