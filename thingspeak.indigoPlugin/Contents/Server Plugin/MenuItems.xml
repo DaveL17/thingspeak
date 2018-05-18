@@ -16,11 +16,6 @@
         <CallbackMethod>commsUnkillAll</CallbackMethod>
     </MenuItem>
 
-    <MenuItem id="toggleDebug">
-    	<Name>Toggle Debugging</Name>
-    	<CallbackMethod>toggleDebug</CallbackMethod>
-    </MenuItem>
-
     <MenuItem id="toolsSeparator" type="separator"/>
 
     <MenuItem id="channelClearFeed">
@@ -52,7 +47,7 @@
         <ConfigUI>
 
             <Field id="configLabel" type="label">
-                <Label>Use these settings to create a new Thingspeak channel. All of the settings are optional; however, you must enter an API Key in the plugin configuration menu for this tool to work. You can change these values once the channel has been created (via the Thingspeak website).</Label>
+                <Label>Use these settings to create a new Thingspeak channel. All of the settings are optional; however, you must enter an API Key in the plugin configuration menu for this tool to work. You can change these values once the channel has been created (using the Update Channel Info tool).</Label>
             </Field>
 
             <Field id="configLabel2" type="label"/>

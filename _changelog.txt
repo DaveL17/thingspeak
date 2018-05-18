@@ -1,3 +1,10 @@
+v1.2.01
+- Now requires Indigo 7.0
+- Updates Indigo API to 2.0
+- Removes custom log file handling. After applying this update, users can
+  safely delete the custom log file. The path to the log file is printed
+  to the Indigo events log when this update is applied.
+
 v1.1.07
 - Fixes bugs in plugin configuration validation.
 - Plugin menu option to "Upload Data Now" now works regardless of the next

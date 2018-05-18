@@ -24,7 +24,7 @@
     </Field>
 
     <Field id="logFileLocation" type="textfield" defaultValue="/Library/Application Support/Perceptive Automation/Indigo 7/Logs/Thingspeak Log.txt"
-           tooltip="Please enter the location where log files should be stored (full path and filename).">
+           tooltip="Please enter the location where log files should be stored (full path and filename)." hidden="true">
         <Label>Log File Path:</Label>
     </Field>
 
@@ -76,44 +76,8 @@
     <!-- Notifications Template -->
     <Template file="DLFramework/template_notifications.xml" />
 
-    <Field id="space6" type="label"/>
-
-    <Field id="space7" type="label" alignText="right">
-        <Label>Debug Settings</Label>
-    </Field>
-
-    <Field id="separator3" type="separator"/>
-
-    <Field id="displayDebugSettings" type="checkbox" defaultValue="false">
-        <Label>Display Settings:</Label>
-        <Description/>
-    </Field>
-
-    <Field id="showDebugInfo" type="checkbox" defaultValue="false" visibleBindingId="displayDebugSettings" visibleBindingValue="true">
-        <Label/>
-        <Description>Enable debug logging</Description>
-    </Field>
-
-    <Field id="showDebugLevel" type="menu" defaultValue="Low" visibleBindingId="displayDebugSettings" visibleBindingValue="true"
-           tooltip="Controls the amount of debug information written to the log.">
-        <Label>Debug level:</Label>
-        <List>
-            <Option value="1">Low</Option>
-            <Option value="2">Medium</Option>
-            <Option value="3">High</Option>
-        </List>
-    </Field>
-
-    <Field id="space8" type="label" visibleBindingId="displayDebugSettings" visibleBindingValue="true" fontSize="small" alignWithControl="True">
-        <Label>Turn on debugging only when needed. Be careful when posting the output to the forums or other public places as it could expose sensitive information. Unticking the checkbox will disable debug logging.</Label>
-    </Field>
-
-    <Field id="space9" type="label" visibleBindingId="displayDebugSettings" visibleBindingValue="true" fontSize="mini" alignWithControl="True">
-        <Label>Low - Minimal debugging.
-Medium - All debug logging except sensitive information.
-High -  May contain sensitive information.
-        </Label>
-    </Field>
+    <!-- Debugging Template -->
+    <Template file="DLFramework/template_debugging.xml"/>
 
     <!-- Hidden fields. -->
     <Field id="logFileDate" type="textfield" defaultValue="1970-01-01" hidden="True">
