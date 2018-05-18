@@ -562,7 +562,7 @@ class Plugin(indigo.PluginBase):
             dev.updateStateOnServer('status', value=response_dict.get('status', "0"))
 
             # For thing values 1-8
-            for _ in range(1,9):
+            for _ in range(1, 9):
                 dev.updateStateOnServer('thing{0}'.format(_), value=response_dict.get('field{0}'.format(_), "0"))
 
             # Convert UTC return to local time. There is an optional timezone parameter
@@ -1166,7 +1166,7 @@ class Plugin(indigo.PluginBase):
             response, response_dict = self.sendToThingspeak('get', url, parms)
 
             # For thing values 1-8
-            for _ in range(1,9):
+            for _ in range(1, 9):
                 valuesDict['field{0}'.format(_)] = response_dict['channel'].get('field{0}'.format(_), '')
 
         return valuesDict
