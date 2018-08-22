@@ -342,6 +342,7 @@ class Plugin(indigo.PluginBase):
 
         :param valuesDict:
         :param typeId:
+        :return bool:
         """
 
         url = "/channels/{0}.xml".format(valuesDict['channelList'])
