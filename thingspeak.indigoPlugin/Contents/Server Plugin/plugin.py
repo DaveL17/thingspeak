@@ -61,7 +61,7 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__     = 'Thingspeak Plugin for Indigo Home Control'
-__version__   = '1.2.01'
+__version__   = '1.2.02'
 
 # =============================================================================
 
@@ -81,6 +81,9 @@ kDefaultPluginPrefs = {
 class Plugin(indigo.PluginBase):
     def __init__(self, pluginId, pluginDisplayName, pluginVersion, pluginPrefs):
         indigo.PluginBase.__init__(self, pluginId, pluginDisplayName, pluginVersion, pluginPrefs)
+
+        self.pluginIsInitializing = True
+        self.pluginIsShuttingDown = False
 
         updater_url               = "https://raw.githubusercontent.com/DaveL17/thingspeak/master/thingspeak_version.html"
         self.updater              = indigoPluginUpdateChecker.updateChecker(self, updater_url)
@@ -116,6 +119,8 @@ class Plugin(indigo.PluginBase):
         #     pydevd.settrace('localhost', port=5678, stdoutToServer=True, stderrToServer=True, suspend=False)
         # except:
         #     pass
+
+        self.pluginIsInitializing = False
 
     def __del__(self):
 
@@ -192,6 +197,8 @@ class Plugin(indigo.PluginBase):
         self.updater.checkVersionPoll()  # See if there is an update and whether the user wants to be notified.
 
     def shutdown(self):
+
+        self.pluginIsShuttingDown = True
 
         for dev in indigo.devices.iter('self'):
             dev.updateStateImageOnServer(indigo.kStateImageSel.SensorOff)

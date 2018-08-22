@@ -1,3 +1,7 @@
+v1.2.02
+- Updates Actions support URL.
+- Code refinements.
+
 v1.2.01
 - Now requires Indigo 7.0
 - Updates Indigo API to 2.0
