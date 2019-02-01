@@ -59,7 +59,7 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__     = 'Thingspeak Plugin for Indigo Home Control'
-__version__   = '1.2.05'
+__version__   = '1.2.06'
 
 # =============================================================================
 
@@ -131,14 +131,19 @@ class Plugin(indigo.PluginBase):
     # =============================================================================
     def closedPrefsConfigUi(self, valuesDict, userCancelled):
 
-        if userCancelled:
-            self.logger.debug(u"User prefs dialog cancelled.")
-
         if not userCancelled:
-            self.logger.debug(u"User prefs saved.")
-            self.logger.debug(unicode(valuesDict))
 
+            self.logger.debug(unicode(valuesDict))
             self.logger.warning(u"Warning! Debug output contains sensitive information.")
+
+            # Ensure that self.pluginPrefs includes any recent changes.
+            for k in valuesDict:
+                self.pluginPrefs[k] = valuesDict[k]
+
+            self.logger.debug(u"User prefs saved.")
+
+        else:
+            self.logger.debug(u"User prefs dialog cancelled.")
 
         # Update update select globals if plugin prefs have changed.
         self.debugLevel = int(self.pluginPrefs.get('showDebugLevel', '30'))
