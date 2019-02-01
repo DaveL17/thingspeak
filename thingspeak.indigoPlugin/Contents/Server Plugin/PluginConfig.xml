@@ -23,7 +23,7 @@
         <Label>API Key:</Label>
     </Field>
 
-    <Field id="logFileLocation" type="textfield" defaultValue="/Library/Application Support/Perceptive Automation/Indigo 7/Logs/Thingspeak Log.txt"
+    <Field id="logFileLocation" type="textfield" defaultValue=""
            tooltip="Please enter the location where log files should be stored (full path and filename)." hidden="true">
         <Label>Log File Path:</Label>
     </Field>
@@ -74,7 +74,7 @@
     </Field>
 
     <!-- Notifications Template -->
-    <Template file="DLFramework/template_notifications.xml" />
+    <!--<Template file="DLFramework/template_notifications.xml" />-->
 
     <!-- Debugging Template -->
     <Template file="DLFramework/template_debugging.xml"/>

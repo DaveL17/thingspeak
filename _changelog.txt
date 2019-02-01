@@ -1,3 +1,6 @@
+v1.2.05
+- Audits kDefaultPluginPrefs.
+
 v1.2.04
 - Removes plugin update checker.
 

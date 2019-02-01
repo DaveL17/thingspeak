@@ -59,20 +59,27 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__     = 'Thingspeak Plugin for Indigo Home Control'
-__version__   = '1.2.04'
+__version__   = '1.2.05'
 
 # =============================================================================
 
+install_path = indigo.server.getInstallFolderPath()
+
 kDefaultPluginPrefs = {
-    u'configMenuTimeoutInterval': 15,            # How long to wait on a server timeout.
-    u'elevation'                : 0,             # Elevation of data source.
-    u'latitude'                 : 0,             # Latitude of data source.
-    u'longitude'                : 0,             # Longitude of data source.
-    u'showDebugInfo'            : False,         # Verbose debug logging?
-    u'showDebugLevel'           : 1,             # Low, Medium or High debug output.
-    u'twitter'                  : "",            # Username linked to ThingTweet
-    u'updaterEmail'             : "",            # Email to notify of plugin updates.
-    u'updaterEmailsEnabled'     : False,         # Notification of plugin updates wanted.
+    u'apiKey': "",                        # Thingspeak API key.
+    u'configMenuTimeoutInterval': 15,     # How long to wait on a server timeout.
+    u'deviceIP'                 : "XXX.XXX.XXX.XXX:3000",  # Local Thingspeak server IP.
+    u'devicePort'               : False,  # Use local Thingspeak server.
+    u'elevation'                : 0,      # Elevation of data source.
+    u'latitude'                 : 0,      # Latitude of data source.
+    u'logFileDate'              : "1970-01-01",  # Placeholder date.
+    u'logFileLocation'          : u"{0}/Logs/Thingspeak Log.txt".format(install_path),  # Log folder path relative to Indigo version.
+    u'longitude'                : 0,      # Longitude of data source.
+    u'showDebugInfo'            : False,  # Verbose debug logging?
+    u'showDebugLevel'           : 1,      # Low, Medium or High debug output.
+    u'twitter'                  : "",     # Username linked to ThingTweet
+    u'updaterEmail'             : "",     # Email to notify of plugin updates.
+    u'updaterEmailsEnabled'     : False,  # Notification of plugin updates wanted.
     }
 
 

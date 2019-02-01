@@ -1,11 +1,6 @@
 <?xml version="1.0"?>
 <MenuItems>
 
-    <MenuItem id="checkForUpdates">
-    	<Name>Check for Plugin Updates</Name>
-    	<CallbackMethod>checkPluginVersion</CallbackMethod>
-    </MenuItem>
-
     <MenuItem id="commsKillAll">
         <Name>Disable All Plugin Devices</Name>
         <CallbackMethod>commsKillAll</CallbackMethod>
