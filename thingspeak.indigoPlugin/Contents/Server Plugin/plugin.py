@@ -21,7 +21,6 @@ needed to make them compatible (i.e., converting a string to a float).
 
 Credits
  - Karl (kw123) - device state restriction methods
- - Update Checker by: berkinet (with additional features by Travis Cook)
 
 Thingspeak API - https://www.mathworks.com/help/thingspeak/
 """
@@ -41,7 +40,6 @@ import requests
 import time as t
 
 # Third-party modules
-from DLFramework import indigoPluginUpdateChecker
 try:
     import indigo
 except ImportError:
@@ -61,7 +59,7 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__     = 'Thingspeak Plugin for Indigo Home Control'
-__version__   = '1.2.02'
+__version__   = '1.2.04'
 
 # =============================================================================
 
@@ -84,11 +82,6 @@ class Plugin(indigo.PluginBase):
 
         self.pluginIsInitializing = True
         self.pluginIsShuttingDown = False
-
-        updater_url               = "https://raw.githubusercontent.com/DaveL17/thingspeak/master/thingspeak_version.html"
-        self.updater              = indigoPluginUpdateChecker.updateChecker(self, updater_url)
-        self.updaterEmail         = self.pluginPrefs.get('updaterEmail', "")
-        self.updaterEmailsEnabled = self.pluginPrefs.get('updaterEmailsEnabled', "false")
 
         # ============================ Configure Logging ==============================
         # Convert from legacy ['low', 'medium', 'high'] or [1, 2, 3].
@@ -126,8 +119,9 @@ class Plugin(indigo.PluginBase):
 
         indigo.PluginBase.__del__(self)
 
-# Indigo Methods ==============================================================
-
+    # =============================================================================
+    # ============================== Indigo Methods ===============================
+    # =============================================================================
     def closedPrefsConfigUi(self, valuesDict, userCancelled):
 
         if userCancelled:
@@ -143,6 +137,7 @@ class Plugin(indigo.PluginBase):
         self.debugLevel = int(self.pluginPrefs.get('showDebugLevel', '30'))
         self.indigo_log_handler.setLevel(self.debugLevel)
 
+    # =============================================================================
     def deviceStartComm(self, dev):
 
         self.logger.debug(u"Starting device: {0}".format(dev.name))
@@ -150,12 +145,14 @@ class Plugin(indigo.PluginBase):
         dev.updateStateOnServer('thingState', value=False, uiValue=u"waiting")
         dev.updateStateImageOnServer(indigo.kStateImageSel.SensorOff)
 
+    # =============================================================================
     def deviceStopComm(self, dev):
 
         self.logger.debug(u"Stopping device: {0}".format(dev.name))
         dev.updateStateOnServer('thingState', value=False, uiValue=u"disabled")
         dev.updateStateImageOnServer(indigo.kStateImageSel.SensorOff)
 
+    # =============================================================================
     def getDeviceConfigUiValues(self, valuesDict, typeId, devId):
 
         # Get latest list of Indigo devices and variables. We don't return
@@ -165,14 +162,13 @@ class Plugin(indigo.PluginBase):
 
         return valuesDict
 
+    # =============================================================================
     def runConcurrentThread(self):
 
         self.logger.debug(u"runConcurrentThread() initiated.")
 
         try:
             while True:
-                self.updater.checkVersionPoll()
-
                 if not self.updating and not self.uploadNow:
                     self.updating = True
                     self.encodeValueDicts()
@@ -184,6 +180,7 @@ class Plugin(indigo.PluginBase):
             self.logger.debug(u"Thingspeak stop thread called.")
             pass
 
+    # =============================================================================
     def startup(self):
 
         # Notify users they can safely delete legacy custom log file.
@@ -194,8 +191,8 @@ class Plugin(indigo.PluginBase):
             indigo.server.log(u"*" * 80)
 
         self.logger.warning(u"Warning! Debug output contains sensitive information.")
-        self.updater.checkVersionPoll()  # See if there is an update and whether the user wants to be notified.
 
+    # =============================================================================
     def shutdown(self):
 
         self.pluginIsShuttingDown = True
@@ -203,6 +200,7 @@ class Plugin(indigo.PluginBase):
         for dev in indigo.devices.iter('self'):
             dev.updateStateImageOnServer(indigo.kStateImageSel.SensorOff)
 
+    # =============================================================================
     def validatePrefsConfigUi(self, valuesDict):
 
         error_msg_dict = indigo.Dict()
@@ -279,8 +277,9 @@ class Plugin(indigo.PluginBase):
 
         return True, valuesDict
 
-# Plugin Methods ==============================================================
-
+    # =============================================================================
+    # ============================== Plugin Methods ===============================
+    # =============================================================================
     def channelListGenerator(self, filter="", valuesDict=None, typeId="", targetId=0):
         """
         Generate a list of channel names and IDs
@@ -304,6 +303,7 @@ class Plugin(indigo.PluginBase):
 
         return [(item['id'], item['name']) for item in response_dict]
 
+    # =============================================================================
     def channelClearFeed(self, valuesDict, typeId):
         """
         Clear Thingspeak channel using Thingspeak API
@@ -330,6 +330,7 @@ class Plugin(indigo.PluginBase):
 
         return True
 
+    # =============================================================================
     def channelDelete(self, valuesDict, typeId):
         """
         Delete Thingspeak channel using Thingspeak API
@@ -357,6 +358,7 @@ class Plugin(indigo.PluginBase):
 
         return True
 
+    # =============================================================================
     def getParms(self, valuesDict):
         """
         Construct the API URL for upload to Thingspeak
@@ -396,6 +398,7 @@ class Plugin(indigo.PluginBase):
 
         return parms
 
+    # =============================================================================
     def channelCreate(self, valuesDict, typeId):
         """
         Create Thingspeak channel using Thingspeak API
@@ -423,6 +426,7 @@ class Plugin(indigo.PluginBase):
             self.logger.warning(u"Problem creating channel.")
             return False
 
+    # =============================================================================
     def channelList(self):
         """
         List current Thingspeak channels
@@ -455,6 +459,7 @@ class Plugin(indigo.PluginBase):
         else:
             return False
 
+    # =============================================================================
     def channelUpdate(self, valuesDict, typeId):
         """
         Update Thingspeak channel using Thingspeak API
@@ -494,19 +499,7 @@ class Plugin(indigo.PluginBase):
             self.logger.warning(u"Problem updating channel settings.")
             return False, valuesDict
 
-    def checkPluginVersion(self):
-        """
-        Check to see if running the most current version of the plugin.
-
-        The checkPluginVersion() method will reach out to determine whether
-        the plugin version is current.
-
-        -----
-
-        """
-
-        self.updater.checkVersionNow()
-
+    # =============================================================================
     def commsKillAll(self):
         """
         Disable communication for all plugin devices
@@ -521,6 +514,7 @@ class Plugin(indigo.PluginBase):
         for dev in indigo.devices.itervalues("self"):
             indigo.device.enable(dev, value=False)
 
+    # =============================================================================
     def commsUnkillAll(self):
         """
         Enable communication for all plugin devices
@@ -535,6 +529,7 @@ class Plugin(indigo.PluginBase):
         for dev in indigo.devices.itervalues("self"):
             indigo.device.enable(dev, value=True)
 
+    # =============================================================================
     def devPrepareForThingspeak(self, dev, parms):
         """
         Upload data to Thingspeak and evaluate the result
@@ -596,6 +591,7 @@ class Plugin(indigo.PluginBase):
             dev.updateStateImageOnServer(indigo.kStateImageSel.SensorOn)
             return True
 
+    # =============================================================================
     def devStateGenerator1(self, filter="", valuesDict=None, typeId="", targetId=0):
         """
         Generate a list of devices and variables for the Thingspeak device
@@ -630,6 +626,7 @@ class Plugin(indigo.PluginBase):
             else:
                 return [('None', 'None')]
 
+    # =============================================================================
     def devStateGenerator2(self, filter="", valuesDict=None, typeId="", targetId=0):
         """
         Generate a list of devices and variables for the Thingspeak device
@@ -664,6 +661,7 @@ class Plugin(indigo.PluginBase):
             else:
                 return [('None', 'None')]
 
+    # =============================================================================
     def devStateGenerator3(self, filter="", valuesDict=None, typeId="", targetId=0):
         """
         Generate a list of devices and variables for the Thingspeak device
@@ -696,6 +694,7 @@ class Plugin(indigo.PluginBase):
             else:
                 return [('None', 'None')]
 
+    # =============================================================================
     def devStateGenerator4(self, filter="", valuesDict=None, typeId="", targetId=0):
         """
         Generate a list of devices and variables for the Thingspeak device
@@ -728,6 +727,7 @@ class Plugin(indigo.PluginBase):
             else:
                 return [('None', 'None')]
 
+    # =============================================================================
     def devStateGenerator5(self, filter="", valuesDict=None, typeId="", targetId=0):
         """
         Generate a list of devices and variables for the Thingspeak device
@@ -760,6 +760,7 @@ class Plugin(indigo.PluginBase):
             else:
                 return [('None', 'None')]
 
+    # =============================================================================
     def devStateGenerator6(self, filter="", valuesDict=None, typeId="", targetId=0):
         """
         Generate a list of devices and variables for the Thingspeak device
@@ -792,6 +793,7 @@ class Plugin(indigo.PluginBase):
             else:
                 return [('None', 'None')]
 
+    # =============================================================================
     def devStateGenerator7(self, filter="", valuesDict=None, typeId="", targetId=0):
         """
         Generate a list of devices and variables for the Thingspeak device
@@ -824,6 +826,7 @@ class Plugin(indigo.PluginBase):
             else:
                 return [('None', 'None')]
 
+    # =============================================================================
     def devStateGenerator8(self, filter="", valuesDict=None, typeId="", targetId=0):
         """
         Generate a list of devices and variables for the Thingspeak device
@@ -856,6 +859,7 @@ class Plugin(indigo.PluginBase):
             else:
                 return [('None', 'None')]
 
+    # =============================================================================
     def encodeValueDicts(self):
         """
         Encode the data dicts for upload to Thingspeak
@@ -991,6 +995,7 @@ class Plugin(indigo.PluginBase):
         self.updating  = False  # If we've come here automatically
         return
 
+    # =============================================================================
     def listGenerator(self, filter="", valuesDict=None, typeId="", targetId=0):
         """
         Return a list of devices and variables
@@ -1008,6 +1013,7 @@ class Plugin(indigo.PluginBase):
 
         return self.devicesAndVariablesList
 
+    # =============================================================================
     def onlyNumerics(self, val):
         """
         Ensure value is a number
@@ -1048,6 +1054,7 @@ class Plugin(indigo.PluginBase):
                 else:
                     return False
 
+    # =============================================================================
     def sendToThingspeak(self, request_type, url, parms):
         """
         Send the payload to Thingspeak
@@ -1132,6 +1139,7 @@ class Plugin(indigo.PluginBase):
             self.logger.warning(u"Host server timeout. Will continue to retry.")
             return response_code, response_dict
 
+    # =============================================================================
     def updateMenuConfigUi(self, valuesDict, menuId):
         """
         Populate controls in the Update Channel Info... configuration dialog
@@ -1179,6 +1187,7 @@ class Plugin(indigo.PluginBase):
 
         return valuesDict
 
+    # =============================================================================
     def updateThingspeakDataAction(self, valuesDict):
         """
         Update Thingspeak data based on a plugin action item call
@@ -1197,6 +1206,7 @@ class Plugin(indigo.PluginBase):
         self.encodeValueDicts()
         return
 
+    # =============================================================================
     def updateThingspeakDataMenu(self):
         """
         Update Thingspeak data based on a plugin menu item call
@@ -1213,3 +1223,4 @@ class Plugin(indigo.PluginBase):
         self.uploadNow = True
         self.encodeValueDicts()
         return
+    # =============================================================================

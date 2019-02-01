@@ -1,3 +1,10 @@
+v1.2.04
+- Removes plugin update checker.
+
+v1.2.03
+- Changes "En/Disable all Fantastic Weather Devices" to "En/Disable all Plugin
+  Devices".
+
 v1.2.02
 - Updates Actions support URL.
 - Code refinements.
