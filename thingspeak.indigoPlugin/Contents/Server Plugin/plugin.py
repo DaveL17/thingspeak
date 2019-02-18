@@ -59,7 +59,7 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__     = 'Thingspeak Plugin for Indigo Home Control'
-__version__   = '1.2.06'
+__version__   = '1.2.07'
 
 # =============================================================================
 
@@ -78,8 +78,6 @@ kDefaultPluginPrefs = {
     u'showDebugInfo'            : False,  # Verbose debug logging?
     u'showDebugLevel'           : 1,      # Low, Medium or High debug output.
     u'twitter'                  : "",     # Username linked to ThingTweet
-    u'updaterEmail'             : "",     # Email to notify of plugin updates.
-    u'updaterEmailsEnabled'     : False,  # Notification of plugin updates wanted.
     }
 
 
@@ -119,6 +117,15 @@ class Plugin(indigo.PluginBase):
         #     pydevd.settrace('localhost', port=5678, stdoutToServer=True, stderrToServer=True, suspend=False)
         # except:
         #     pass
+
+        # ============================ Deprecation Notice =============================
+        # We want to make sure these messages will be printed to the log regardless of
+        # the current debug level settings.
+        self.indigo_log_handler.setLevel(30)
+        self.logger.warning(u"Due to changes in Thingspeak's pricing model, the Thingspeak Plugin has been deprecated.")
+        self.logger.warning(u"You are strongly encouraged to find an alternative solution.")
+        self.indigo_log_handler.setLevel(self.debugLevel)
+        t.sleep(3)
 
         self.pluginIsInitializing = False
 
@@ -273,18 +280,6 @@ class Plugin(indigo.PluginBase):
             error_msg_dict['elevation'] = u"Please enter a whole number integer (positive, negative or zero)."
             error_msg_dict['showAlertText'] = u"Elevation Error:\n\nThingspeak requires elevation to be expressed as a whole number integer. It can be positive, negative or zero."
             valuesDict['elevation'] = 0
-            return False, valuesDict, error_msg_dict
-
-        # =============================== Notifications ===============================
-        if valuesDict['updaterEmailsEnabled'] and not valuesDict['updaterEmail']:
-            error_msg_dict['updaterEmail'] = u"Please supply a valid email address."
-            error_msg_dict['showAlertText'] = u"Updater Email Error:\n\nThe plugin requires a valid email address in order to notify you of plugin updates."
-            return False, valuesDict, error_msg_dict
-
-        elif valuesDict['updaterEmailsEnabled'] and "@" not in valuesDict['updaterEmail']:
-            error_msg_dict['updaterEmail'] = u"Please supply a valid email address."
-            error_msg_dict['showAlertText'] = u"Updater Email Error:\n\nThe plugin requires a valid email address in order to notify you of plugin updates (the email address needs " \
-                                              u"an '@' symbol."
             return False, valuesDict, error_msg_dict
 
         return True, valuesDict

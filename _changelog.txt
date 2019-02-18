@@ -1,3 +1,7 @@
+v1.2.07
+- Adds notice that plugin is deprecated.
+- Code refinements.
+
 v1.2.06
 - Synchronize self.pluginPrefs in closedPrefsConfigUi().
 
