@@ -1,5 +1,9 @@
 ![Thingspeak Logo](https://github.com/DaveL17/thingspeak/wiki/img/img_thingspeakLogo.png)
 
+***NOTICE: Due to changes to the Thingspeak pricing model, the Thingspeak Plugin 
+has been deprecated. I will continue to fix bugs and answer questions, but 
+all feature development has stopped.***
+
 The Thingspeak plugin allows users to create Indigo Home Control Server 
 devices which provide a facility to upload Indigo data to Thingspeak for 
 charting and other purposes. 
