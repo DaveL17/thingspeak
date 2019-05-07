@@ -1,3 +1,7 @@
+v1.2.08
+- Ensures that the plugin is compatible with the Indigo server version.
+- Standardizes SupportURL behavior across all plugin functions.
+
 v1.2.07
 - Updates readme.md
 - Adds notice that plugin is deprecated.

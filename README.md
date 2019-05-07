@@ -1,4 +1,5 @@
-![Thingspeak Logo](https://github.com/DaveL17/thingspeak/wiki/img/img_thingspeakLogo.png)
+# ![Logo](https://github.com/DaveL17/thingspeak/wiki/img/img_thingspeakLogo.png)
+# ![shield](https://img.shields.io/github/release/DaveL17/thingspeak.svg)
 
 ***NOTICE: Due to changes to the Thingspeak pricing model, the Thingspeak Plugin 
 has been deprecated. I will continue to fix bugs and answer questions, but 

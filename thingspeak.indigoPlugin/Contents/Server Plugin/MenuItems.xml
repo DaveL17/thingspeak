@@ -18,6 +18,7 @@
     	<CallbackMethod>channelClearFeed</CallbackMethod>
         <ButtonTitle>Clear</ButtonTitle>
         <ConfigUI>
+            <SupportURL>https://github.com/DaveL17/thingspeak/wiki/menu_items</SupportURL>
 
             <Field id="configLabel" type="label">
                 <Label>Use this tool to clear all data from a Thingspeak channel.</Label>
@@ -40,6 +41,7 @@
     	<CallbackMethod>channelCreate</CallbackMethod>
         <ButtonTitle>Create</ButtonTitle>
         <ConfigUI>
+            <SupportURL>https://github.com/DaveL17/thingspeak/wiki/menu_items</SupportURL>
 
             <Field id="configLabel" type="label">
                 <Label>Use these settings to create a new Thingspeak channel. All of the settings are optional; however, you must enter an API Key in the plugin configuration menu for this tool to work. You can change these values once the channel has been created (using the Update Channel Info tool).</Label>
@@ -131,6 +133,7 @@
     	<CallbackMethod>channelDelete</CallbackMethod>
         <ButtonTitle>Delete</ButtonTitle>
         <ConfigUI>
+            <SupportURL>https://github.com/DaveL17/thingspeak/wiki/menu_items</SupportURL>
 
             <Field id="configLabel" type="label">
                 <Label>Use this tool to delete a channel from Thingspeak.</Label>
@@ -158,6 +161,7 @@
     	<CallbackMethod>channelUpdate</CallbackMethod>
         <ButtonTitle>Update</ButtonTitle>
         <ConfigUI>
+            <SupportURL>https://github.com/DaveL17/thingspeak/wiki/menu_items</SupportURL>
 
             <Field id="configLabel" type="label">
                 <Label>Use this tool to update an existing channel. When you select the channel to update, the plugin will reach out to Thingspeak to get the current channel information.  This may take a moment depending on the speed of the reply.</Label>

@@ -59,7 +59,7 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__     = 'Thingspeak Plugin for Indigo Home Control'
-__version__   = '1.2.07'
+__version__   = '1.2.08'
 
 # =============================================================================
 
@@ -200,7 +200,16 @@ class Plugin(indigo.PluginBase):
             pass
 
     # =============================================================================
+    def sendDevicePing(self, dev_id=0, suppress_logging=False):
+
+        indigo.server.log(u"Thingspeak Plugin devices do not support the ping function.")
+        return {'result': 'Failure'}
+
+    # =============================================================================
     def startup(self):
+
+        # =========================== Audit Indigo Version ============================
+        self.Fogbert.audit_server_version(min_ver=7)
 
         # Notify users they can safely delete legacy custom log file.
         if int(__version__.split('.')[1]) < 2:

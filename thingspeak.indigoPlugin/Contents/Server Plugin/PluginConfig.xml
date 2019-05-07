@@ -2,6 +2,8 @@
 
 <PluginConfig>
 
+    <SupportURL>https://github.com/DaveL17/thingspeak/wiki/configuration</SupportURL>
+
     <Field id="infoLabel0" type="label">
         <Label>Thingspeak Plugin</Label>
     </Field>

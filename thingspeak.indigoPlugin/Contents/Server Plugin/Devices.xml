@@ -5,7 +5,7 @@
         <Name>Thingspeak Data Upload Device</Name>
 
         <ConfigUI>
-
+            <SupportURL>https://github.com/DaveL17/thingspeak/wiki/devices</SupportURL>
             <Field id="space0" type="label"/>
 
             <Field id="channelList" type="menu">

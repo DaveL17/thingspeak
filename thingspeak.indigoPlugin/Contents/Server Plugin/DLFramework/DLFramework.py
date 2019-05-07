@@ -4,6 +4,7 @@
 """
 DLFramework is a framework to consolidate methods used throughout all
 Indigo plugins with the com.fogbert.indigoPlugin.xxxx bundle identifier.
+.
 """
 
 import ast
@@ -134,9 +135,11 @@ class Fogbert(object):
 
         :return: [(ID, "(D) Name"), (ID, "(V) Name")]
         """
-        devices_and_variables_list = [('None', 'None')]
+        devices_and_variables_list = []
         [devices_and_variables_list.append((dev.id, u"(D) {0}".format(dev.name))) for dev in indigo.devices]
         [devices_and_variables_list.append((var.id, u"(V) {0}".format(var.name))) for var in indigo.variables]
+        devices_and_variables_list.append(('-1', '%%separator%%'),)
+        devices_and_variables_list.append(('None', 'None'),)
         return devices_and_variables_list
 
     def launchWebPage(self, url):
@@ -166,6 +169,13 @@ class Fogbert(object):
 
         except (KeyError, ValueError):
             return [(0, 'Pick a Device or Variable')]
+
+    def audit_server_version(self, min_ver):
+
+        # =========================== Audit Indigo Version ============================
+        ver     = self.plugin.versStrToTuple(indigo.server.version)
+        if ver[0] < min_ver:
+            self.plugin.stopPlugin(u"This plugin requires Indigo version {0} or above.".format(min_ver), isError=True)
 
 
 class Formatter(object):

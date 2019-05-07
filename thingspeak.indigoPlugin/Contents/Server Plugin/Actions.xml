@@ -1,6 +1,5 @@
 <?xml version="1.0"?>
 <Actions>
-  <SupportURL>https://github.com/DaveL17/thingspeak/wiki</SupportURL>
   <Action id="uploadNow">
     <Name>Upload Thingspeak Data</Name>
     <CallbackMethod>updateThingspeakDataAction</CallbackMethod>
