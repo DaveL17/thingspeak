@@ -1,4 +1,4 @@
-# ![Logo](https://github.com/DaveL17/thingspeak/wiki/img/img_thingspeakLogo.png)
+# ![Logo](https://github.com/DaveL17/thingspeak/wiki/img/img_thingspeak_logo.png)
 # ![shield](https://img.shields.io/github/release/DaveL17/thingspeak.svg) ![indigo-version](https://img.shields.io/badge/Indigo-7.0+-blueviolet.svg) ![indigo-version](https://img.shields.io/badge/Python-2.7-darkgreen.svg) ![status](https://img.shields.io/badge/Deprecated-darkred.svg)
  
 ***NOTICE: Due to changes to the Thingspeak pricing model, the Thingspeak Plugin 
