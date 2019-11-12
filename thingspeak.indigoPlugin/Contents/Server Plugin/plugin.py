@@ -59,7 +59,7 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__     = 'Thingspeak Plugin for Indigo Home Control'
-__version__   = '1.2.08'
+__version__   = '1.2.09'
 
 # =============================================================================
 

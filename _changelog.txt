@@ -1,3 +1,6 @@
+v1.2.09
+- Removes all references to legacy version checking.
+
 v1.2.08
 - Ensures that the plugin is compatible with the Indigo server version.
 - Standardizes SupportURL behavior across all plugin functions.
