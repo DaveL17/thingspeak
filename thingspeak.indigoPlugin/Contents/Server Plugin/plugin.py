@@ -59,7 +59,7 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__     = 'Thingspeak Plugin for Indigo Home Control'
-__version__   = '1.2.09'
+__version__   = '1.2.10'
 
 # =============================================================================
 
@@ -136,16 +136,16 @@ class Plugin(indigo.PluginBase):
     # =============================================================================
     # ============================== Indigo Methods ===============================
     # =============================================================================
-    def closedPrefsConfigUi(self, valuesDict, userCancelled):
+    def closedPrefsConfigUi(self, values_dict, user_cancelled):
 
-        if not userCancelled:
+        if not user_cancelled:
 
-            self.logger.debug(unicode(valuesDict))
+            self.logger.debug(unicode(values_dict))
             self.logger.warning(u"Warning! Debug output contains sensitive information.")
 
             # Ensure that self.pluginPrefs includes any recent changes.
-            for k in valuesDict:
-                self.pluginPrefs[k] = valuesDict[k]
+            for k in values_dict:
+                self.pluginPrefs[k] = values_dict[k]
 
             self.logger.debug(u"User prefs saved.")
 
@@ -172,14 +172,14 @@ class Plugin(indigo.PluginBase):
         dev.updateStateImageOnServer(indigo.kStateImageSel.SensorOff)
 
     # =============================================================================
-    def getDeviceConfigUiValues(self, valuesDict, typeId, devId):
+    def getDeviceConfigUiValues(self, values_dict, type_id, dev_id):
 
         # Get latest list of Indigo devices and variables. We don't return
         # it from here, but we want it updated any time a device config is
         # opened.
         self.devicesAndVariablesList = self.Fogbert.deviceAndVariableList()
 
-        return valuesDict
+        return values_dict
 
     # =============================================================================
     def runConcurrentThread(self):
@@ -229,74 +229,84 @@ class Plugin(indigo.PluginBase):
             dev.updateStateImageOnServer(indigo.kStateImageSel.SensorOff)
 
     # =============================================================================
-    def validatePrefsConfigUi(self, valuesDict):
+    def validatePrefsConfigUi(self, values_dict):
+
+        class PluginValidationError(Exception):
+            def __init__(self, key=(), alert_text=None, message=u'Error!'):
+                self.key = key
+                self.alert_text = alert_text
+                self.message = message
 
         error_msg_dict = indigo.Dict()
 
-        # ================================= API Key ===================================
-        # Key must be 16 characters in length
-        if len(valuesDict['apiKey']) not in (0, 16):
-            error_msg_dict['apiKey'] = u"The API Key must be 16 characters long."
-            error_msg_dict['showAlertText'] = u"API Key Error:\n\nThe API Key must be 16 characters long and cannot contain spaces."
-            return False, valuesDict, error_msg_dict
+        try:
+            # ================================= API Key ===================================
+            # Key must be 16 characters in length
+            if len(values_dict['apiKey']) not in (0, 16):
+                raise PluginValidationError(key=('apiKey',), alert_text=u"API Key Error:\n\nThe API Key must be 16 characters long and cannot contain spaces.", message=u"The API Key must be 16 characters long.")
 
-        # Test key against ThingSpeak service
-        if not valuesDict['devicePort']:
+            # Test key against ThingSpeak service
+            if not values_dict['devicePort']:
+                try:
+                    ts_ip = "https://api.thingspeak.com/channels.json?api_key={0}".format(values_dict['apiKey'])
+                    response = requests.get(ts_ip, timeout=1.50)
+
+                    if response.status_code == 401:
+                        raise ValueError
+
+                except requests.exceptions.Timeout:
+                    self.logger.warning(u"Unable to confirm accuracy of API Key with the ThingSpeak service.")
+
+                except ValueError:
+                    raise PluginValidationError(key=('apiKey',), alert_text=u"API Key Error:\n\nThingSpeak rejected your API Key as invalid. Please ensure that your key is entered correctly.", message=u"Invalid API Key")
+
+            # ============================ Latitude / Longitude ===========================
+            # Must be integers or floats. Can be negative.
             try:
-                ts_ip = "https://api.thingspeak.com/channels.json?api_key={0}".format(valuesDict['apiKey'])
-                response = requests.get(ts_ip, timeout=1.50)
-
-                if response.status_code == 401:
-                    raise ValueError
-
-            except requests.exceptions.Timeout:
-                self.logger.warning(u"Unable to confirm accuracy of API Key with the ThingSpeak service.")
-
+                float(values_dict['latitude'])
             except ValueError:
-                error_msg_dict['apiKey'] = u"Invalid API Key"
-                error_msg_dict['showAlertText'] = u"API Key Error:\n\nThingSpeak rejected your API Key as invalid. Please ensure that your key is entered correctly."
-                return False, valuesDict, error_msg_dict
+                error_msg_dict['latitude'] = u"Please enter a number (positive, negative or zero)."
+                error_msg_dict['showAlertText'] = u"Latitude Error:\n\nThingspeak requires latitude to be expressed as a number. It can be positive, negative or zero."
+                values_dict['latitude'] = 0.0
+                return False, values_dict, error_msg_dict
 
-        # ============================ Latitude / Longitude ===========================
-        # Must be integers or floats. Can be negative.
-        try:
-            float(valuesDict['latitude'])
-        except ValueError:
-            error_msg_dict['latitude'] = u"Please enter a number (positive, negative or zero)."
-            error_msg_dict['showAlertText'] = u"Latitude Error:\n\nThingspeak requires latitude to be expressed as a number. It can be positive, negative or zero."
-            valuesDict['latitude'] = 0.0
-            return False, valuesDict, error_msg_dict
+            try:
+                float(values_dict['longitude'])
+            except ValueError:
+                error_msg_dict['longitude'] = u"Please enter a number (positive, negative or zero)."
+                error_msg_dict['showAlertText'] = u"Longitude Error:\n\nThingspeak requires longitude to be expressed as a number. It can be positive, negative or zero."
+                values_dict['longitude'] = 0.0
+                return False, values_dict, error_msg_dict
 
-        try:
-            float(valuesDict['longitude'])
-        except ValueError:
-            error_msg_dict['longitude'] = u"Please enter a number (positive, negative or zero)."
-            error_msg_dict['showAlertText'] = u"Longitude Error:\n\nThingspeak requires longitude to be expressed as a number. It can be positive, negative or zero."
-            valuesDict['longitude'] = 0.0
-            return False, valuesDict, error_msg_dict
+            # ================================= Elevation =================================
+            # Must be an integer (can not be a float. Can be negative.
+            try:
+                int(values_dict['elevation'])
+            except ValueError:
+                error_msg_dict['elevation'] = u"Please enter a whole number integer (positive, negative or zero)."
+                error_msg_dict['showAlertText'] = u"Elevation Error:\n\nThingspeak requires elevation to be expressed as a whole number integer. It can be positive, negative or zero."
+                values_dict['elevation'] = 0
+                return False, values_dict, error_msg_dict
 
-        # ================================= Elevation =================================
-        # Must be an integer (can not be a float. Can be negative.
-        try:
-            int(valuesDict['elevation'])
-        except ValueError:
-            error_msg_dict['elevation'] = u"Please enter a whole number integer (positive, negative or zero)."
-            error_msg_dict['showAlertText'] = u"Elevation Error:\n\nThingspeak requires elevation to be expressed as a whole number integer. It can be positive, negative or zero."
-            valuesDict['elevation'] = 0
-            return False, valuesDict, error_msg_dict
+            if "." in str(values_dict['elevation']):
+                error_msg_dict['elevation'] = u"Please enter a whole number integer (positive, negative or zero)."
+                error_msg_dict['showAlertText'] = u"Elevation Error:\n\nThingspeak requires elevation to be expressed as a whole number integer. It can be positive, negative or zero."
+                values_dict['elevation'] = 0
+                return False, values_dict, error_msg_dict
 
-        if "." in str(valuesDict['elevation']):
-            error_msg_dict['elevation'] = u"Please enter a whole number integer (positive, negative or zero)."
-            error_msg_dict['showAlertText'] = u"Elevation Error:\n\nThingspeak requires elevation to be expressed as a whole number integer. It can be positive, negative or zero."
-            valuesDict['elevation'] = 0
-            return False, valuesDict, error_msg_dict
+            return True, values_dict
 
-        return True, valuesDict
+        except PluginValidationError as err:
+            for key in err.key:
+                error_msg_dict[key] = err.message
+            if err.alert_text:
+                error_msg_dict['showAlertText'] = err.alert_text
+            return False, values_dict, error_msg_dict
 
     # =============================================================================
     # ============================== Plugin Methods ===============================
     # =============================================================================
-    def channelListGenerator(self, filter="", valuesDict=None, typeId="", targetId=0):
+    def channelListGenerator(self, filter="", values_dict=None, type_id="", target_id=0):
         """
         Generate a list of channel names and IDs
 
@@ -306,9 +316,9 @@ class Plugin(indigo.PluginBase):
         -----
 
         :param filter:
-        :param valuesDict:
-        :param typeId:
-        :param targetId:
+        :param values_dict:
+        :param type_id:
+        :param target_id:
         :return: [(channel_id, channel_name), (channel_id, channel_name)]
         """
 
@@ -320,7 +330,7 @@ class Plugin(indigo.PluginBase):
         return [(item['id'], item['name']) for item in response_dict]
 
     # =============================================================================
-    def channelClearFeed(self, valuesDict, typeId):
+    def channelClearFeed(self, values_dict, type_id):
         """
         Clear Thingspeak channel using Thingspeak API
 
@@ -330,11 +340,11 @@ class Plugin(indigo.PluginBase):
 
         -----
 
-        :param valuesDict:
-        :param typeId:
+        :param values_dict:
+        :param type_id:
         """
 
-        url = "/channels/{0}/feeds.xml".format(valuesDict['channelList'])
+        url = "/channels/{0}/feeds.xml".format(values_dict['channelList'])
         parms = {'api_key': self.pluginPrefs.get('apiKey', '')}
 
         response, response_dict = self.sendToThingspeak('delete', url, parms)
@@ -347,7 +357,7 @@ class Plugin(indigo.PluginBase):
         return True
 
     # =============================================================================
-    def channelDelete(self, valuesDict, typeId):
+    def channelDelete(self, values_dict, type_id):
         """
         Delete Thingspeak channel using Thingspeak API
 
@@ -357,12 +367,12 @@ class Plugin(indigo.PluginBase):
 
         -----
 
-        :param valuesDict:
-        :param typeId:
+        :param values_dict:
+        :param type_id:
         :return bool:
         """
 
-        url = "/channels/{0}.xml".format(valuesDict['channelList'])
+        url = "/channels/{0}.xml".format(values_dict['channelList'])
         parms = {'api_key': self.pluginPrefs.get('apiKey', '')}
 
         response, response_dict = self.sendToThingspeak('delete', url, parms)
@@ -375,7 +385,7 @@ class Plugin(indigo.PluginBase):
         return True
 
     # =============================================================================
-    def getParms(self, valuesDict):
+    def getParms(self, values_dict):
         """
         Construct the API URL for upload to Thingspeak
 
@@ -383,39 +393,39 @@ class Plugin(indigo.PluginBase):
 
         -----
 
-        :param valuesDict:
+        :param values_dict:
         """
 
         # Thingspeak requires a string representation of the boolean value.
-        if valuesDict['public_flag']:
+        if values_dict['public_flag']:
             public_flag = 'true'
         else:
             public_flag = 'false'
 
-        parms = {'api_key':     self.pluginPrefs.get('apiKey', ''),    # User's API key. This is different from a channel API key, and can be found in account profile page. (required).
+        parms = {'api_key':     self.pluginPrefs.get('apiKey', ''),  # User's API key. This is different from a channel API key, and can be found in account profile page. (required).
                  'elevation':   self.pluginPrefs.get('elevation', 0),  # Elevation in meters (optional)
-                 'latitude':    self.pluginPrefs.get('latitude', 0),   # Latitude in degrees (optional)
+                 'latitude':    self.pluginPrefs.get('latitude', 0),  # Latitude in degrees (optional)
                  'longitude':   self.pluginPrefs.get('longitude', 0),  # Longitude in degrees (optional)
-                 'description': valuesDict['description'],             # Description of the channel (optional)
-                 'field1':      valuesDict['field1'],                  # Field 1 name (optional)
-                 'field2':      valuesDict['field2'],                  # Field 2 name (optional)
-                 'field3':      valuesDict['field3'],                  # Field 3 name (optional)
-                 'field4':      valuesDict['field4'],                  # Field 4 name (optional)
-                 'field5':      valuesDict['field5'],                  # Field 5 name (optional)
-                 'field6':      valuesDict['field6'],                  # Field 6 name (optional)
-                 'field7':      valuesDict['field7'],                  # Field 7 name (optional)
-                 'field8':      valuesDict['field8'],                  # Field 8 name (optional)
-                 'metadata':    valuesDict['metadata'],                # Metadata for the channel, which can include JSON, XML, or any other data (optional)
-                 'name':        valuesDict['name'],                    # Name of the channel (optional)
-                 'public_flag': public_flag,                           # Whether the channel is public, default 'false' (optional, string required if present)
-                 'tags':        valuesDict['tags'],                    # Comma-separated list of tags (optional)
-                 'url':         valuesDict['url'],                     # Web page URL for the channel (optional)
+                 'description': values_dict['description'],  # Description of the channel (optional)
+                 'field1':      values_dict['field1'],  # Field 1 name (optional)
+                 'field2':      values_dict['field2'],  # Field 2 name (optional)
+                 'field3':      values_dict['field3'],  # Field 3 name (optional)
+                 'field4':      values_dict['field4'],  # Field 4 name (optional)
+                 'field5':      values_dict['field5'],  # Field 5 name (optional)
+                 'field6':      values_dict['field6'],  # Field 6 name (optional)
+                 'field7':      values_dict['field7'],  # Field 7 name (optional)
+                 'field8':      values_dict['field8'],  # Field 8 name (optional)
+                 'metadata':    values_dict['metadata'],  # Metadata for the channel, which can include JSON, XML, or any other data (optional)
+                 'name':        values_dict['name'],  # Name of the channel (optional)
+                 'public_flag': public_flag,  # Whether the channel is public, default 'false' (optional, string required if present)
+                 'tags':        values_dict['tags'],  # Comma-separated list of tags (optional)
+                 'url':         values_dict['url'],  # Web page URL for the channel (optional)
                  }
 
         return parms
 
     # =============================================================================
-    def channelCreate(self, valuesDict, typeId):
+    def channelCreate(self, values_dict, type_id):
         """
         Create Thingspeak channel using Thingspeak API
 
@@ -425,13 +435,13 @@ class Plugin(indigo.PluginBase):
 
         -----
 
-        :param valuesDict:
-        :param typeId:
+        :param values_dict:
+        :param type_id:
         """
 
         url = "/channels.json"
 
-        parms = self.getParms(valuesDict)
+        parms = self.getParms(values_dict)
 
         response, response_dict = self.sendToThingspeak('post', url, parms)
 
@@ -476,7 +486,7 @@ class Plugin(indigo.PluginBase):
             return False
 
     # =============================================================================
-    def channelUpdate(self, valuesDict, typeId):
+    def channelUpdate(self, values_dict, type_id):
         """
         Update Thingspeak channel using Thingspeak API
 
@@ -486,20 +496,20 @@ class Plugin(indigo.PluginBase):
 
         -----
 
-        :param valuesDict:
-        :param typeId:
+        :param values_dict:
+        :param type_id:
         """
 
-        url = "/channels/{0}.json".format(valuesDict['channelList'])
+        url = "/channels/{0}.json".format(values_dict['channelList'])
 
         # Validation
-        if not valuesDict['channelList']:
+        if not values_dict['channelList']:
             error_msg_dict = indigo.Dict()
             error_msg_dict['channelList'] = u"Please select a channel to update."
             error_msg_dict['showAlertText'] = u"Update Channel Info Error:\n\nYou must select a channel to update."
-            return False, valuesDict, error_msg_dict
+            return False, values_dict, error_msg_dict
 
-        parms = self.getParms(valuesDict)
+        parms = self.getParms(values_dict)
 
         # Get rid of empty key/value pairs so we don't overwrite existing information.
         for key in parms.keys():
@@ -513,7 +523,7 @@ class Plugin(indigo.PluginBase):
             return True
         else:
             self.logger.warning(u"Problem updating channel settings.")
-            return False, valuesDict
+            return False, values_dict
 
     # =============================================================================
     def commsKillAll(self):
@@ -608,7 +618,7 @@ class Plugin(indigo.PluginBase):
             return True
 
     # =============================================================================
-    def devStateGenerator1(self, filter="", valuesDict=None, typeId="", targetId=0):
+    def devStateGenerator1(self, filter="", values_dict=None, type_id="", target_id=0):
         """
         Generate a list of devices and variables for the Thingspeak device
 
@@ -619,21 +629,21 @@ class Plugin(indigo.PluginBase):
         -----
 
         :param filter:
-        :param valuesDict:
-        :param typeId:
-        :param targetId:
+        :param values_dict:
+        :param type_id:
+        :param target_id:
         """
 
-        if not valuesDict:
+        if not values_dict:
             return []
 
-        if valuesDict and "thing1" in valuesDict:
-            if valuesDict['thing1'] != "":
+        if values_dict and "thing1" in values_dict:
+            if values_dict['thing1'] != "":
                 try:
-                    if int(valuesDict['thing1']) in indigo.devices:
-                        dev = indigo.devices[int(valuesDict['thing1'])]
+                    if int(values_dict['thing1']) in indigo.devices:
+                        dev = indigo.devices[int(values_dict['thing1'])]
                         return [x for x in dev.states.keys() if ".ui" not in x]
-                    elif int(valuesDict['thing1']) in indigo.variables:
+                    elif int(values_dict['thing1']) in indigo.variables:
                         return [('value', 'value')]
                     else:
                         return [('None', 'None')]
@@ -643,7 +653,7 @@ class Plugin(indigo.PluginBase):
                 return [('None', 'None')]
 
     # =============================================================================
-    def devStateGenerator2(self, filter="", valuesDict=None, typeId="", targetId=0):
+    def devStateGenerator2(self, filter="", values_dict=None, type_id="", target_id=0):
         """
         Generate a list of devices and variables for the Thingspeak device
 
@@ -652,23 +662,23 @@ class Plugin(indigo.PluginBase):
         -----
 
         :param filter:
-        :param valuesDict:
-        :param typeId:
-        :param targetId:
+        :param values_dict:
+        :param type_id:
+        :param target_id:
         """
 
-        if not valuesDict:
+        if not values_dict:
             return []
 
-        if valuesDict and "thing2" in valuesDict:
+        if values_dict and "thing2" in values_dict:
 
             # If an item has been selected.
-            if valuesDict['thing2'] != "":
+            if values_dict['thing2'] != "":
                 try:
-                    if int(valuesDict['thing2']) in indigo.devices:
-                        dev = indigo.devices[int(valuesDict['thing2'])]
+                    if int(values_dict['thing2']) in indigo.devices:
+                        dev = indigo.devices[int(values_dict['thing2'])]
                         return [x for x in dev.states.keys() if ".ui" not in x]
-                    elif int(valuesDict['thing2']) in indigo.variables:
+                    elif int(values_dict['thing2']) in indigo.variables:
                         return [('value', 'value')]
                     else:
                         return [('None', 'None')]
@@ -678,7 +688,7 @@ class Plugin(indigo.PluginBase):
                 return [('None', 'None')]
 
     # =============================================================================
-    def devStateGenerator3(self, filter="", valuesDict=None, typeId="", targetId=0):
+    def devStateGenerator3(self, filter="", values_dict=None, type_id="", target_id=0):
         """
         Generate a list of devices and variables for the Thingspeak device
 
@@ -687,21 +697,21 @@ class Plugin(indigo.PluginBase):
         -----
 
         :param filter:
-        :param valuesDict:
-        :param typeId:
-        :param targetId:
+        :param values_dict:
+        :param type_id:
+        :param target_id:
         """
 
-        if not valuesDict:
+        if not values_dict:
             return []
 
-        if valuesDict and "thing3" in valuesDict:
-            if valuesDict['thing3'] != "":
+        if values_dict and "thing3" in values_dict:
+            if values_dict['thing3'] != "":
                 try:
-                    if int(valuesDict['thing3']) in indigo.devices:
-                        dev = indigo.devices[int(valuesDict['thing3'])]
+                    if int(values_dict['thing3']) in indigo.devices:
+                        dev = indigo.devices[int(values_dict['thing3'])]
                         return [x for x in dev.states.keys() if ".ui" not in x]
-                    elif int(valuesDict['thing3']) in indigo.variables:
+                    elif int(values_dict['thing3']) in indigo.variables:
                         return [('value', 'value')]
                     else:
                         return [('None', 'None')]
@@ -711,7 +721,7 @@ class Plugin(indigo.PluginBase):
                 return [('None', 'None')]
 
     # =============================================================================
-    def devStateGenerator4(self, filter="", valuesDict=None, typeId="", targetId=0):
+    def devStateGenerator4(self, filter="", values_dict=None, type_id="", target_id=0):
         """
         Generate a list of devices and variables for the Thingspeak device
 
@@ -720,21 +730,21 @@ class Plugin(indigo.PluginBase):
         -----
 
         :param filter:
-        :param valuesDict:
-        :param typeId:
-        :param targetId:
+        :param values_dict:
+        :param type_id:
+        :param target_id:
         """
 
-        if not valuesDict:
+        if not values_dict:
             return []
 
-        if valuesDict and "thing4" in valuesDict:
-            if valuesDict['thing4'] != "":
+        if values_dict and "thing4" in values_dict:
+            if values_dict['thing4'] != "":
                 try:
-                    if int(valuesDict['thing4']) in indigo.devices:
-                        dev = indigo.devices[int(valuesDict['thing4'])]
+                    if int(values_dict['thing4']) in indigo.devices:
+                        dev = indigo.devices[int(values_dict['thing4'])]
                         return [x for x in dev.states.keys() if ".ui" not in x]
-                    elif int(valuesDict['thing4']) in indigo.variables:
+                    elif int(values_dict['thing4']) in indigo.variables:
                         return [('value', 'value')]
                     else:
                         return [('None', 'None')]
@@ -744,7 +754,7 @@ class Plugin(indigo.PluginBase):
                 return [('None', 'None')]
 
     # =============================================================================
-    def devStateGenerator5(self, filter="", valuesDict=None, typeId="", targetId=0):
+    def devStateGenerator5(self, filter="", values_dict=None, type_id="", target_id=0):
         """
         Generate a list of devices and variables for the Thingspeak device
 
@@ -753,21 +763,21 @@ class Plugin(indigo.PluginBase):
         -----
 
         :param filter:
-        :param valuesDict:
-        :param typeId:
-        :param targetId:
+        :param values_dict:
+        :param type_id:
+        :param target_id:
         """
 
-        if not valuesDict:
+        if not values_dict:
             return []
 
-        if valuesDict and "thing5" in valuesDict:
-            if valuesDict['thing5'] != "":
+        if values_dict and "thing5" in values_dict:
+            if values_dict['thing5'] != "":
                 try:
-                    if int(valuesDict['thing5']) in indigo.devices:
-                        dev = indigo.devices[int(valuesDict['thing5'])]
+                    if int(values_dict['thing5']) in indigo.devices:
+                        dev = indigo.devices[int(values_dict['thing5'])]
                         return [x for x in dev.states.keys() if ".ui" not in x]
-                    elif int(valuesDict['thing5']) in indigo.variables:
+                    elif int(values_dict['thing5']) in indigo.variables:
                         return [('value', 'value')]
                     else:
                         return [('None', 'None')]
@@ -777,7 +787,7 @@ class Plugin(indigo.PluginBase):
                 return [('None', 'None')]
 
     # =============================================================================
-    def devStateGenerator6(self, filter="", valuesDict=None, typeId="", targetId=0):
+    def devStateGenerator6(self, filter="", values_dict=None, type_id="", target_id=0):
         """
         Generate a list of devices and variables for the Thingspeak device
 
@@ -786,21 +796,21 @@ class Plugin(indigo.PluginBase):
         -----
 
         :param filter:
-        :param valuesDict:
-        :param typeId:
-        :param targetId:
+        :param values_dict:
+        :param type_id:
+        :param target_id:
         """
 
-        if not valuesDict:
+        if not values_dict:
             return []
 
-        if valuesDict and "thing6" in valuesDict:
-            if valuesDict['thing6'] != "":
+        if values_dict and "thing6" in values_dict:
+            if values_dict['thing6'] != "":
                 try:
-                    if int(valuesDict['thing6']) in indigo.devices:
-                        dev = indigo.devices[int(valuesDict['thing6'])]
+                    if int(values_dict['thing6']) in indigo.devices:
+                        dev = indigo.devices[int(values_dict['thing6'])]
                         return [x for x in dev.states.keys() if ".ui" not in x]
-                    elif int(valuesDict['thing6']) in indigo.variables:
+                    elif int(values_dict['thing6']) in indigo.variables:
                         return [('value', 'value')]
                     else:
                         return [('None', 'None')]
@@ -810,7 +820,7 @@ class Plugin(indigo.PluginBase):
                 return [('None', 'None')]
 
     # =============================================================================
-    def devStateGenerator7(self, filter="", valuesDict=None, typeId="", targetId=0):
+    def devStateGenerator7(self, filter="", values_dict=None, type_id="", target_id=0):
         """
         Generate a list of devices and variables for the Thingspeak device
 
@@ -819,21 +829,21 @@ class Plugin(indigo.PluginBase):
         -----
 
         :param filter:
-        :param valuesDict:
-        :param typeId:
-        :param targetId:
+        :param values_dict:
+        :param type_id:
+        :param target_id:
         """
 
-        if not valuesDict:
+        if not values_dict:
             return []
 
-        if valuesDict and "thing7" in valuesDict:
-            if valuesDict['thing7'] != "":
+        if values_dict and "thing7" in values_dict:
+            if values_dict['thing7'] != "":
                 try:
-                    if int(valuesDict['thing7']) in indigo.devices:
-                        dev = indigo.devices[int(valuesDict['thing7'])]
+                    if int(values_dict['thing7']) in indigo.devices:
+                        dev = indigo.devices[int(values_dict['thing7'])]
                         return [x for x in dev.states.keys() if ".ui" not in x]
-                    elif int(valuesDict['thing7']) in indigo.variables:
+                    elif int(values_dict['thing7']) in indigo.variables:
                         return [('value', 'value')]
                     else:
                         return [('None', 'None')]
@@ -843,7 +853,7 @@ class Plugin(indigo.PluginBase):
                 return [('None', 'None')]
 
     # =============================================================================
-    def devStateGenerator8(self, filter="", valuesDict=None, typeId="", targetId=0):
+    def devStateGenerator8(self, filter="", values_dict=None, type_id="", target_id=0):
         """
         Generate a list of devices and variables for the Thingspeak device
 
@@ -852,21 +862,21 @@ class Plugin(indigo.PluginBase):
         -----
 
         :param filter:
-        :param valuesDict:
-        :param typeId:
-        :param targetId:
+        :param values_dict:
+        :param type_id:
+        :param target_id:
         """
 
-        if not valuesDict:
+        if not values_dict:
             return []
 
-        if valuesDict and "thing8" in valuesDict:
-            if valuesDict['thing8'] != "":
+        if values_dict and "thing8" in values_dict:
+            if values_dict['thing8'] != "":
                 try:
-                    if int(valuesDict['thing8']) in indigo.devices:
-                        dev = indigo.devices[int(valuesDict['thing8'])]
+                    if int(values_dict['thing8']) in indigo.devices:
+                        dev = indigo.devices[int(values_dict['thing8'])]
                         return [x for x in dev.states.keys() if ".ui" not in x]
-                    elif int(valuesDict['thing8']) in indigo.variables:
+                    elif int(values_dict['thing8']) in indigo.variables:
                         return [('value', 'value')]
                     else:
                         return [('None', 'None')]
@@ -1012,7 +1022,7 @@ class Plugin(indigo.PluginBase):
         return
 
     # =============================================================================
-    def listGenerator(self, filter="", valuesDict=None, typeId="", targetId=0):
+    def listGenerator(self, filter="", values_dict=None, type_id="", target_id=0):
         """
         Return a list of devices and variables
 
@@ -1022,9 +1032,9 @@ class Plugin(indigo.PluginBase):
         -----
 
         :param filter:
-        :param valuesDict:
-        :param typeId:
-        :param targetId:
+        :param values_dict:
+        :param type_id:
+        :param target_id:
         """
 
         return self.devicesAndVariablesList
@@ -1156,7 +1166,7 @@ class Plugin(indigo.PluginBase):
             return response_code, response_dict
 
     # =============================================================================
-    def updateMenuConfigUi(self, valuesDict, menuId):
+    def updateMenuConfigUi(self, values_dict, menu_id):
         """
         Populate controls in the Update Channel Info... configuration dialog
 
@@ -1168,12 +1178,12 @@ class Plugin(indigo.PluginBase):
 
         -----
 
-        :param valuesDict:
-        :param menuId:
-        :return valuesDict:
+        :param values_dict:
+        :param menu_id:
+        :return values_dict:
         """
 
-        if menuId == 'channelUpdate':
+        if menu_id == 'channelUpdate':
             url       = "/channels.json"
             parms     = {'api_key': self.pluginPrefs.get('apiKey', '')}
             write_key = ""
@@ -1181,30 +1191,30 @@ class Plugin(indigo.PluginBase):
             response, response_dict = self.sendToThingspeak('get', url, parms)
 
             for thing in response_dict:
-                if thing['id'] == int(valuesDict['channelList']):
-                    valuesDict['description'] = thing['description']
-                    valuesDict['metadata']    = thing['metadata']
-                    valuesDict['name']        = thing['name']
-                    valuesDict['tags']        = ",".join([tag['name'] for tag in thing['tags']])
-                    valuesDict['url']         = thing['url']
-                    valuesDict['public_flag'] = thing['public_flag']
+                if thing['id'] == int(values_dict['channelList']):
+                    values_dict['description'] = thing['description']
+                    values_dict['metadata']    = thing['metadata']
+                    values_dict['name']        = thing['name']
+                    values_dict['tags']        = ",".join([tag['name'] for tag in thing['tags']])
+                    values_dict['url']         = thing['url']
+                    values_dict['public_flag'] = thing['public_flag']
 
                     self.logger.debug(u"Channel Info: {0}".format(thing))
                     write_key = thing['api_keys'][0]['api_key']
 
-            url   = "/channels/{0}/feeds.json".format(int(valuesDict['channelList']))
+            url   = "/channels/{0}/feeds.json".format(int(values_dict['channelList']))
             parms = {'api_key': write_key}
 
             response, response_dict = self.sendToThingspeak('get', url, parms)
 
             # For thing values 1-8
             for _ in range(1, 9):
-                valuesDict['field{0}'.format(_)] = response_dict['channel'].get('field{0}'.format(_), '')
+                values_dict['field{0}'.format(_)] = response_dict['channel'].get('field{0}'.format(_), '')
 
-        return valuesDict
+        return values_dict
 
     # =============================================================================
-    def updateThingspeakDataAction(self, valuesDict):
+    def updateThingspeakDataAction(self, values_dict):
         """
         Update Thingspeak data based on a plugin action item call
 
@@ -1215,7 +1225,7 @@ class Plugin(indigo.PluginBase):
 
         -----
 
-        :param valuesDict:
+        :param values_dict:
         """
 
         self.uploadNow = True
