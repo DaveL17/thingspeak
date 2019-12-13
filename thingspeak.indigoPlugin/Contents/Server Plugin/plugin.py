@@ -231,77 +231,59 @@ class Plugin(indigo.PluginBase):
     # =============================================================================
     def validatePrefsConfigUi(self, values_dict):
 
-        class PluginValidationError(Exception):
-            def __init__(self, key=(), alert_text=None, message=u'Error!'):
-                self.key = key
-                self.alert_text = alert_text
-                self.message = message
-
         error_msg_dict = indigo.Dict()
 
+        # ================================= API Key ===================================
+        # Key must be 16 characters in length
+        if len(values_dict['apiKey']) not in (0, 16):
+            error_msg_dict['apiKey'] = u"The API Key must be 16 characters long."
+
+        # Test key against ThingSpeak service
+        if not values_dict['devicePort']:
+            try:
+                ts_ip = "https://api.thingspeak.com/channels.json?api_key={0}".format(values_dict['apiKey'])
+                response = requests.get(ts_ip, timeout=1.50)
+
+                if response.status_code == 401:
+                    raise ValueError
+
+            except requests.exceptions.Timeout:
+                self.logger.warning(u"Unable to confirm accuracy of API Key with the ThingSpeak service.")
+
+            except ValueError:
+                error_msg_dict['apiKey'] = u"ThingSpeak rejected your API Key as invalid. Please ensure that your key is entered correctly."
+
+        # ============================ Latitude / Longitude ===========================
+        # Must be integers or floats. Can be negative.
         try:
-            # ================================= API Key ===================================
-            # Key must be 16 characters in length
-            if len(values_dict['apiKey']) not in (0, 16):
-                raise PluginValidationError(key=('apiKey',), alert_text=u"API Key Error:\n\nThe API Key must be 16 characters long and cannot contain spaces.", message=u"The API Key must be 16 characters long.")
+            float(values_dict['latitude'])
+        except ValueError:
+            values_dict['latitude'] = 0.0
+            error_msg_dict['latitude'] = u"Please enter a number (positive, negative or zero)."
 
-            # Test key against ThingSpeak service
-            if not values_dict['devicePort']:
-                try:
-                    ts_ip = "https://api.thingspeak.com/channels.json?api_key={0}".format(values_dict['apiKey'])
-                    response = requests.get(ts_ip, timeout=1.50)
+        try:
+            float(values_dict['longitude'])
+        except ValueError:
+            values_dict['longitude'] = 0.0
+            error_msg_dict['longitude'] = u"Please enter a number (positive, negative or zero)."
 
-                    if response.status_code == 401:
-                        raise ValueError
+        # ================================= Elevation =================================
+        # Must be an integer (can not be a float. Can be negative.
+        try:
+            int(values_dict['elevation'])
+        except ValueError:
+            values_dict['elevation'] = 0
+            error_msg_dict['elevation'] = u"Please enter a whole number integer (positive, negative or zero)."
 
-                except requests.exceptions.Timeout:
-                    self.logger.warning(u"Unable to confirm accuracy of API Key with the ThingSpeak service.")
+        if "." in str(values_dict['elevation']):
+            values_dict['elevation'] = 0
+            error_msg_dict['elevation'] = u"Please enter a whole number integer (positive, negative or zero)."
 
-                except ValueError:
-                    raise PluginValidationError(key=('apiKey',), alert_text=u"API Key Error:\n\nThingSpeak rejected your API Key as invalid. Please ensure that your key is entered correctly.", message=u"Invalid API Key")
+        if len(error_msg_dict) > 0:
+            error_msg_dict['showAlertText'] = u"Configuration Errors\n\nThere are one or more settings that need to be corrected. Fields requiring attention will be highlighted."
+            return values_dict, error_msg_dict
 
-            # ============================ Latitude / Longitude ===========================
-            # Must be integers or floats. Can be negative.
-            try:
-                float(values_dict['latitude'])
-            except ValueError:
-                error_msg_dict['latitude'] = u"Please enter a number (positive, negative or zero)."
-                error_msg_dict['showAlertText'] = u"Latitude Error:\n\nThingspeak requires latitude to be expressed as a number. It can be positive, negative or zero."
-                values_dict['latitude'] = 0.0
-                return False, values_dict, error_msg_dict
-
-            try:
-                float(values_dict['longitude'])
-            except ValueError:
-                error_msg_dict['longitude'] = u"Please enter a number (positive, negative or zero)."
-                error_msg_dict['showAlertText'] = u"Longitude Error:\n\nThingspeak requires longitude to be expressed as a number. It can be positive, negative or zero."
-                values_dict['longitude'] = 0.0
-                return False, values_dict, error_msg_dict
-
-            # ================================= Elevation =================================
-            # Must be an integer (can not be a float. Can be negative.
-            try:
-                int(values_dict['elevation'])
-            except ValueError:
-                error_msg_dict['elevation'] = u"Please enter a whole number integer (positive, negative or zero)."
-                error_msg_dict['showAlertText'] = u"Elevation Error:\n\nThingspeak requires elevation to be expressed as a whole number integer. It can be positive, negative or zero."
-                values_dict['elevation'] = 0
-                return False, values_dict, error_msg_dict
-
-            if "." in str(values_dict['elevation']):
-                error_msg_dict['elevation'] = u"Please enter a whole number integer (positive, negative or zero)."
-                error_msg_dict['showAlertText'] = u"Elevation Error:\n\nThingspeak requires elevation to be expressed as a whole number integer. It can be positive, negative or zero."
-                values_dict['elevation'] = 0
-                return False, values_dict, error_msg_dict
-
-            return True, values_dict
-
-        except PluginValidationError as err:
-            for key in err.key:
-                error_msg_dict[key] = err.message
-            if err.alert_text:
-                error_msg_dict['showAlertText'] = err.alert_text
-            return False, values_dict, error_msg_dict
+        return True, values_dict
 
     # =============================================================================
     # ============================== Plugin Methods ===============================
