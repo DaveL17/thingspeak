@@ -38,6 +38,7 @@ import os
 import pytz
 import requests
 import time as t
+import traceback
 
 # Third-party modules
 try:
@@ -59,25 +60,23 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__     = 'Thingspeak Plugin for Indigo Home Control'
-__version__   = '1.2.10'
+__version__   = '1.2.11'
 
 # =============================================================================
 
 install_path = indigo.server.getInstallFolderPath()
 
 kDefaultPluginPrefs = {
-    u'apiKey': "",                        # Thingspeak API key.
+    u'apiKey':                    "",     # Thingspeak API key.
     u'configMenuTimeoutInterval': 15,     # How long to wait on a server timeout.
-    u'deviceIP'                 : "XXX.XXX.XXX.XXX:3000",  # Local Thingspeak server IP.
-    u'devicePort'               : False,  # Use local Thingspeak server.
-    u'elevation'                : 0,      # Elevation of data source.
-    u'latitude'                 : 0,      # Latitude of data source.
-    u'logFileDate'              : "1970-01-01",  # Placeholder date.
-    u'logFileLocation'          : u"{0}/Logs/Thingspeak Log.txt".format(install_path),  # Log folder path relative to Indigo version.
-    u'longitude'                : 0,      # Longitude of data source.
-    u'showDebugInfo'            : False,  # Verbose debug logging?
-    u'showDebugLevel'           : 1,      # Low, Medium or High debug output.
-    u'twitter'                  : "",     # Username linked to ThingTweet
+    u'deviceIP':                  "XXX.XXX.XXX.XXX:3000",  # Local Thingspeak server IP.
+    u'devicePort':                False,  # Use local Thingspeak server.
+    u'elevation':                 0,      # Elevation of data source.
+    u'latitude':                  0,      # Latitude of data source.
+    u'longitude':                 0,      # Longitude of data source.
+    u'showDebugInfo':             False,  # Verbose debug logging?
+    u'showDebugLevel':            1,      # Low, Medium or High debug output.
+    u'twitter':                   "",     # Username linked to ThingTweet
     }
 
 
@@ -100,8 +99,6 @@ class Plugin(indigo.PluginBase):
         self.plugin_file_handler.setFormatter(logging.Formatter('%(asctime)s.%(msecs)03d\t%(levelname)-10s\t%(name)s.%(funcName)-28s %(msg)s', datefmt='%Y-%m-%d %H:%M:%S'))
         self.indigo_log_handler.setLevel(self.debugLevel)
 
-        self.logFileDate    = pluginPrefs.get('logFileDate', "1970-01-01")
-        self.logFile        = pluginPrefs.get('logFileLocation', "/Library/Application Support/Perceptive Automation/Indigo {0}/Logs/Thingspeak Log.txt".format(indigo.server.version[0]))
         self.uploadNow      = False  # Call to upload from menu, action in process
         self.updating       = False  # Plugin in process of updating channels
 
@@ -211,14 +208,7 @@ class Plugin(indigo.PluginBase):
         # =========================== Audit Indigo Version ============================
         self.Fogbert.audit_server_version(min_ver=7)
 
-        # Notify users they can safely delete legacy custom log file.
-        if int(__version__.split('.')[1]) < 2:
-            indigo.server.log(u"*" * 80)
-            indigo.server.log(u"Custom log file feature no longer supported. You can safely delete the log file.")
-            indigo.server.log(u"Log file location: {0}".format(self.pluginPrefs['logFileLocation']))
-            indigo.server.log(u"*" * 80)
-
-        self.logger.warning(u"Warning! Debug output contains sensitive information.")
+        self.logger.warning(u"Warning! Debug output may contain sensitive information.")
 
     # =============================================================================
     def shutdown(self):
@@ -248,10 +238,13 @@ class Plugin(indigo.PluginBase):
                     raise ValueError
 
             except requests.exceptions.Timeout:
+                self.Fogbert.pluginErrorHandler(traceback.format_exc())
                 self.logger.warning(u"Unable to confirm accuracy of API Key with the ThingSpeak service.")
 
             except ValueError:
-                error_msg_dict['apiKey'] = u"ThingSpeak rejected your API Key as invalid. Please ensure that your key is entered correctly."
+                self.Fogbert.pluginErrorHandler(traceback.format_exc())
+                error_msg_dict['apiKey'] = u"ThingSpeak rejected your API Key as invalid. Please ensure that your " \
+                                           u"key is entered correctly."
 
         # ============================ Latitude / Longitude ===========================
         # Must be integers or floats. Can be negative.
@@ -280,7 +273,8 @@ class Plugin(indigo.PluginBase):
             error_msg_dict['elevation'] = u"Please enter a whole number integer (positive, negative or zero)."
 
         if len(error_msg_dict) > 0:
-            error_msg_dict['showAlertText'] = u"Configuration Errors\n\nThere are one or more settings that need to be corrected. Fields requiring attention will be highlighted."
+            error_msg_dict['showAlertText'] = u"Configuration Errors\n\nThere are one or more settings that need to " \
+                                              u"be corrected. Fields requiring attention will be highlighted."
             return values_dict, error_msg_dict
 
         return True, values_dict
@@ -454,13 +448,27 @@ class Plugin(indigo.PluginBase):
 
         if response == 200:
             write_key = ""
-            indigo.server.log(u"{0:<8}{1:<25}{2:^9}{3:<21}{4:^10}{5:<18}".format('ID', 'Name', 'Public', 'Created At', 'Ranking', 'Write Key'))
-            indigo.server.log(u"{0:=^100}".format(""))
+            indigo.server.log(u"{0:<8}{1:<25}{2:^9}{3:<21}{4:^10}{5:<18}".format('ID',
+                                                                                 'Name',
+                                                                                 'Public',
+                                                                                 'Created At',
+                                                                                 'Ranking',
+                                                                                 'Write Key'
+                                                                                 )
+                              )
+            indigo.server.log(u"{0:{1}^100}".format("", "="))
             for thing in response_dict:
                 for key in thing['api_keys']:
                     if key['write_flag']:
                         write_key = key['api_key']
-                indigo.server.log(u"{0:<8}{1:<25}{2:^9}{3:<21}{4:^10}{5:<18}".format(thing['id'], thing['name'], thing['public_flag'], thing['created_at'], thing['ranking'], write_key))
+                indigo.server.log(u"{0:<8}{1:<25}{2:^9}{3:<21}{4:^10}{5:<18}".format(thing['id'],
+                                                                                     thing['name'],
+                                                                                     thing['public_flag'],
+                                                                                     thing['created_at'],
+                                                                                     thing['ranking'],
+                                                                                     write_key
+                                                                                     )
+                                  )
 
             return True
 
@@ -886,7 +894,8 @@ class Plugin(indigo.PluginBase):
 
             # A device has been created, but hasn't been saved yet.
             if not dev.configured:
-                indigo.server.log(u"A device is being (or has been) created, but it's not fully configured. Sleeping while you finish.")
+                indigo.server.log(u"A device is being (or has been) created, but it's not fully configured. "
+                                  u"Sleeping while you finish.")
                 continue
 
             elif not dev.enabled:
@@ -951,7 +960,10 @@ class Plugin(indigo.PluginBase):
                                     self.logger.debug(u"Value: {0}".format(var))
 
                                 except ValueError:
-                                    self.logger.warning(u"{0} - {1} is non-numeric or has been removed. Will try to upload, but it won't chart.".format(dev.name, dev.pluginProps[thing_str]))
+                                    self.Fogbert.pluginErrorHandler(traceback.format_exc())
+                                    self.logger.warning(u"{0} - {1} is non-numeric or has been removed. "
+                                                        u"Will try to upload, but it won't "
+                                                        u"chart.".format(dev.name, dev.pluginProps[thing_str]))
                                     var = u"undefined"
 
                                 # Add device state value to dictionary.
@@ -966,7 +978,10 @@ class Plugin(indigo.PluginBase):
                                     self.logger.debug(u"Value: {0}".format(var))
 
                                 except ValueError:
-                                    self.logger.warning(u"{0} - {1} is non-numeric or has been removed. Will try to upload, but it won't chart.".format(dev.name, dev.pluginProps[thing_str]))
+                                    self.Fogbert.pluginErrorHandler(traceback.format_exc())
+                                    self.logger.warning(u"{0} - {1} is non-numeric or has been removed. "
+                                                        u"Will try to upload, but it won't "
+                                                        u"chart.".format(dev.name, dev.pluginProps[thing_str]))
 
                                 # Add variable value to dictionary.
                                 thing_dict['field' + str(v)] = var
@@ -987,15 +1002,13 @@ class Plugin(indigo.PluginBase):
                         self.logger.debug(u"{0}: Channel updating...".format(dev.name))
                         self.devPrepareForThingspeak(dev, thing_dict)
 
-                    except Exception as error:
+                    except Exception:
+                        self.Fogbert.pluginErrorHandler(traceback.format_exc())
+                        self.logger.debug("{0} - Curl Return Code: {1}".format(dt.datetime.time(dt.datetime.now()),
+                                                                               response))
+                        self.logger.debug("{0} - Curl Response Dict: {1}".format(dt.datetime.time(dt.datetime.now()),
+                                                                                 response_dict,))
 
-                        f = open(self.logFile, 'a')
-                        f.write("{0} - Curl Return Error: {1}\n".format(dt.datetime.time(dt.datetime.now()), error))
-                        f.write("{0} - Curl Return Code: {1}\n".format(dt.datetime.time(dt.datetime.now()), response))
-                        f.write("{0} - Curl Response Dict: {1}\n\n".format(dt.datetime.time(dt.datetime.now()), response_dict))
-                        f.close()
-
-                        self.logger.warning(unicode(error))
                 else:
                     continue
 
@@ -1107,7 +1120,7 @@ class Plugin(indigo.PluginBase):
 
             try:
                 response_dict = response.json()
-            except:
+            except Exception:
                 response_dict = {}
 
             response_code = response.status_code
@@ -1132,6 +1145,7 @@ class Plugin(indigo.PluginBase):
 
         # Internet isn't there
         except requests.exceptions.ConnectionError:
+            self.Fogbert.pluginErrorHandler(traceback.format_exc())
             self.logger.warning(u"Unable to reach host. Will continue to attempt connection.")
 
             # TODO: this has been throwing gremlins in Little Snitch
@@ -1144,6 +1158,7 @@ class Plugin(indigo.PluginBase):
 
         # ThingSpeak doesn't respond
         except requests.exceptions.Timeout:
+            self.Fogbert.pluginErrorHandler(traceback.format_exc())
             self.logger.warning(u"Host server timeout. Will continue to retry.")
             return response_code, response_dict
 

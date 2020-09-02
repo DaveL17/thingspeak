@@ -1,3 +1,6 @@
+v1.2.11
+- Better integration of DLFramework.
+
 v1.2.10
 - Improvements to device configuration validation.
 - Code refinements.
