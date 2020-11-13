@@ -96,7 +96,8 @@ class Plugin(indigo.PluginBase):
             self.pluginPrefs['showDebugLevel'] = 30
 
         self.debugLevel = self.pluginPrefs['showDebugLevel']
-        self.plugin_file_handler.setFormatter(logging.Formatter('%(asctime)s.%(msecs)03d\t%(levelname)-10s\t%(name)s.%(funcName)-28s %(msg)s', datefmt='%Y-%m-%d %H:%M:%S'))
+        log_format = '%(asctime)s.%(msecs)03d\t%(levelname)-10s\t%(name)s.%(funcName)-28s %(msg)s'
+        self.plugin_file_handler.setFormatter(logging.Formatter(log_format, datefmt='%Y-%m-%d %H:%M:%S'))
         self.indigo_log_handler.setLevel(self.debugLevel)
 
         self.uploadNow      = False  # Call to upload from menu, action in process

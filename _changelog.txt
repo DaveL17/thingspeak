@@ -1,3 +1,6 @@
+v1.2.12
+- Sync with GitHub
+
 v1.2.11
 - Better integration of DLFramework.
 
