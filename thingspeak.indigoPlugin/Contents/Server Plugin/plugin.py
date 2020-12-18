@@ -27,6 +27,7 @@ Thingspeak API - https://www.mathworks.com/help/thingspeak/
 
 # =================================== TO DO ===================================
 
+# TODO: Combine dynamic list method calls using filter (like Matplotlib).
 
 # ================================== IMPORTS ==================================
 
@@ -60,7 +61,7 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__     = 'Thingspeak Plugin for Indigo Home Control'
-__version__   = '1.2.11'
+__version__   = '1.2.12'
 
 # =============================================================================
 
@@ -608,6 +609,8 @@ class Plugin(indigo.PluginBase):
             dev.updateStateImageOnServer(indigo.kStateImageSel.SensorOn)
             return True
 
+    # TODO: Combine these eight generators into one using the filter attribute.
+    #       See Matplotlib Stock Bar Chart as an example.
     # =============================================================================
     def devStateGenerator1(self, filter="", values_dict=None, type_id="", target_id=0):
         """
