@@ -61,7 +61,7 @@ __copyright__ = Dave.__copyright__
 __license__   = Dave.__license__
 __build__     = Dave.__build__
 __title__     = 'Thingspeak Plugin for Indigo Home Control'
-__version__   = '1.2.12'
+__version__   = '1.2.13'
 
 # =============================================================================
 
@@ -612,7 +612,7 @@ class Plugin(indigo.PluginBase):
     # TODO: Combine these eight generators into one using the filter attribute.
     #       See Matplotlib Stock Bar Chart as an example.
     # =============================================================================
-    def devStateGenerator1(self, filter="", values_dict=None, type_id="", target_id=0):
+    def devStateGenerator(self, filter="", values_dict=None, type_id="", target_id=0):
         """
         Generate a list of devices and variables for the Thingspeak device
 
@@ -631,246 +631,15 @@ class Plugin(indigo.PluginBase):
         if not values_dict:
             return []
 
-        if values_dict and "thing1" in values_dict:
-            if values_dict['thing1'] != "":
+        thing = "thing{0}".format(filter)
+
+        if values_dict and thing in values_dict:
+            if values_dict[thing] != "":
                 try:
-                    if int(values_dict['thing1']) in indigo.devices:
-                        dev = indigo.devices[int(values_dict['thing1'])]
+                    if int(values_dict[thing]) in indigo.devices:
+                        dev = indigo.devices[int(values_dict[thing])]
                         return [x for x in dev.states.keys() if ".ui" not in x]
-                    elif int(values_dict['thing1']) in indigo.variables:
-                        return [('value', 'value')]
-                    else:
-                        return [('None', 'None')]
-                except ValueError:
-                    return [('None', 'None')]
-            else:
-                return [('None', 'None')]
-
-    # =============================================================================
-    def devStateGenerator2(self, filter="", values_dict=None, type_id="", target_id=0):
-        """
-        Generate a list of devices and variables for the Thingspeak device
-
-        See Docstring for devStateGenerator1
-
-        -----
-
-        :param filter:
-        :param values_dict:
-        :param type_id:
-        :param target_id:
-        """
-
-        if not values_dict:
-            return []
-
-        if values_dict and "thing2" in values_dict:
-
-            # If an item has been selected.
-            if values_dict['thing2'] != "":
-                try:
-                    if int(values_dict['thing2']) in indigo.devices:
-                        dev = indigo.devices[int(values_dict['thing2'])]
-                        return [x for x in dev.states.keys() if ".ui" not in x]
-                    elif int(values_dict['thing2']) in indigo.variables:
-                        return [('value', 'value')]
-                    else:
-                        return [('None', 'None')]
-                except ValueError:
-                    return [('None', 'None')]
-            else:
-                return [('None', 'None')]
-
-    # =============================================================================
-    def devStateGenerator3(self, filter="", values_dict=None, type_id="", target_id=0):
-        """
-        Generate a list of devices and variables for the Thingspeak device
-
-        See Docstring for devStateGenerator1
-
-        -----
-
-        :param filter:
-        :param values_dict:
-        :param type_id:
-        :param target_id:
-        """
-
-        if not values_dict:
-            return []
-
-        if values_dict and "thing3" in values_dict:
-            if values_dict['thing3'] != "":
-                try:
-                    if int(values_dict['thing3']) in indigo.devices:
-                        dev = indigo.devices[int(values_dict['thing3'])]
-                        return [x for x in dev.states.keys() if ".ui" not in x]
-                    elif int(values_dict['thing3']) in indigo.variables:
-                        return [('value', 'value')]
-                    else:
-                        return [('None', 'None')]
-                except ValueError:
-                    return [('None', 'None')]
-            else:
-                return [('None', 'None')]
-
-    # =============================================================================
-    def devStateGenerator4(self, filter="", values_dict=None, type_id="", target_id=0):
-        """
-        Generate a list of devices and variables for the Thingspeak device
-
-        See Docstring for devStateGenerator1
-
-        -----
-
-        :param filter:
-        :param values_dict:
-        :param type_id:
-        :param target_id:
-        """
-
-        if not values_dict:
-            return []
-
-        if values_dict and "thing4" in values_dict:
-            if values_dict['thing4'] != "":
-                try:
-                    if int(values_dict['thing4']) in indigo.devices:
-                        dev = indigo.devices[int(values_dict['thing4'])]
-                        return [x for x in dev.states.keys() if ".ui" not in x]
-                    elif int(values_dict['thing4']) in indigo.variables:
-                        return [('value', 'value')]
-                    else:
-                        return [('None', 'None')]
-                except ValueError:
-                    return [('None', 'None')]
-            else:
-                return [('None', 'None')]
-
-    # =============================================================================
-    def devStateGenerator5(self, filter="", values_dict=None, type_id="", target_id=0):
-        """
-        Generate a list of devices and variables for the Thingspeak device
-
-        See Docstring for devStateGenerator1
-
-        -----
-
-        :param filter:
-        :param values_dict:
-        :param type_id:
-        :param target_id:
-        """
-
-        if not values_dict:
-            return []
-
-        if values_dict and "thing5" in values_dict:
-            if values_dict['thing5'] != "":
-                try:
-                    if int(values_dict['thing5']) in indigo.devices:
-                        dev = indigo.devices[int(values_dict['thing5'])]
-                        return [x for x in dev.states.keys() if ".ui" not in x]
-                    elif int(values_dict['thing5']) in indigo.variables:
-                        return [('value', 'value')]
-                    else:
-                        return [('None', 'None')]
-                except ValueError:
-                    return [('None', 'None')]
-            else:
-                return [('None', 'None')]
-
-    # =============================================================================
-    def devStateGenerator6(self, filter="", values_dict=None, type_id="", target_id=0):
-        """
-        Generate a list of devices and variables for the Thingspeak device
-
-        See Docstring for devStateGenerator1
-
-        -----
-
-        :param filter:
-        :param values_dict:
-        :param type_id:
-        :param target_id:
-        """
-
-        if not values_dict:
-            return []
-
-        if values_dict and "thing6" in values_dict:
-            if values_dict['thing6'] != "":
-                try:
-                    if int(values_dict['thing6']) in indigo.devices:
-                        dev = indigo.devices[int(values_dict['thing6'])]
-                        return [x for x in dev.states.keys() if ".ui" not in x]
-                    elif int(values_dict['thing6']) in indigo.variables:
-                        return [('value', 'value')]
-                    else:
-                        return [('None', 'None')]
-                except ValueError:
-                    return [('None', 'None')]
-            else:
-                return [('None', 'None')]
-
-    # =============================================================================
-    def devStateGenerator7(self, filter="", values_dict=None, type_id="", target_id=0):
-        """
-        Generate a list of devices and variables for the Thingspeak device
-
-        See Docstring for devStateGenerator1
-
-        -----
-
-        :param filter:
-        :param values_dict:
-        :param type_id:
-        :param target_id:
-        """
-
-        if not values_dict:
-            return []
-
-        if values_dict and "thing7" in values_dict:
-            if values_dict['thing7'] != "":
-                try:
-                    if int(values_dict['thing7']) in indigo.devices:
-                        dev = indigo.devices[int(values_dict['thing7'])]
-                        return [x for x in dev.states.keys() if ".ui" not in x]
-                    elif int(values_dict['thing7']) in indigo.variables:
-                        return [('value', 'value')]
-                    else:
-                        return [('None', 'None')]
-                except ValueError:
-                    return [('None', 'None')]
-            else:
-                return [('None', 'None')]
-
-    # =============================================================================
-    def devStateGenerator8(self, filter="", values_dict=None, type_id="", target_id=0):
-        """
-        Generate a list of devices and variables for the Thingspeak device
-
-        See Docstring for devStateGenerator1
-
-        -----
-
-        :param filter:
-        :param values_dict:
-        :param type_id:
-        :param target_id:
-        """
-
-        if not values_dict:
-            return []
-
-        if values_dict and "thing8" in values_dict:
-            if values_dict['thing8'] != "":
-                try:
-                    if int(values_dict['thing8']) in indigo.devices:
-                        dev = indigo.devices[int(values_dict['thing8'])]
-                        return [x for x in dev.states.keys() if ".ui" not in x]
-                    elif int(values_dict['thing8']) in indigo.variables:
+                    elif int(values_dict[thing]) in indigo.variables:
                         return [('value', 'value')]
                     else:
                         return [('None', 'None')]

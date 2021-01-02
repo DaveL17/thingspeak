@@ -40,10 +40,10 @@
             <Field id="simpleSeparator1" type="separator"/>
 
             <!-- Channel field 1 -->
-            <Field id="thing1" type="menu" defaultValue="None">
+            <Field id="thing1" type="menu" filter="1" defaultValue="None">
                 <Label>Thing 1:</Label>
                 <List class="self" filter="" method="listGenerator" dynamicReload="true"/>
-                <CallbackMethod>devStateGenerator1</CallbackMethod>
+                <CallbackMethod>devStateGenerator</CallbackMethod>
             </Field>
 
             <Field id="thing1State" type="menu" defaultValue="None">
@@ -54,10 +54,10 @@
             <Field id="simpleSeparator2" type="separator"/>
 
             <!-- Channel field 2 -->
-            <Field id="thing2" type="menu" defaultValue="None" hidden="false">
+            <Field id="thing2" type="menu"  filter="2" defaultValue="None">
                 <Label>Thing 2:</Label>
                 <List class="self" filter="" method="listGenerator" dynamicReload="true"/>
-                <CallbackMethod>devStateGenerator2</CallbackMethod>
+                <CallbackMethod>devStateGenerator</CallbackMethod>
             </Field>
 
             <Field id="thing2State" type="menu" defaultValue="None">
@@ -68,10 +68,10 @@
             <Field id="simpleSeparator3" type="separator"/>
 
             <!-- Channel field 3 -->
-            <Field id="thing3" type="menu" defaultValue="None" hidden="false">
+            <Field id="thing3" type="menu" filter="3" defaultValue="None">
                 <Label>Thing 3:</Label>
                 <List class="self" filter="" method="listGenerator" dynamicReload="true"/>
-                <CallbackMethod>devStateGenerator3</CallbackMethod>
+                <CallbackMethod>devStateGenerator</CallbackMethod>
             </Field>
 
             <Field id="thing3State" type="menu" defaultValue="None">
@@ -82,10 +82,10 @@
             <Field id="simpleSeparator4" type="separator"/>
 
             <!-- Channel field 4 -->
-            <Field id="thing4" type="menu" defaultValue="None" hidden="false">
+            <Field id="thing4" type="menu"  filter="4" defaultValue="None">
                 <Label>Thing 4:</Label>
                 <List class="self" filter="" method="listGenerator" dynamicReload="true"/>
-                <CallbackMethod>devStateGenerator4</CallbackMethod>
+                <CallbackMethod>devStateGenerator</CallbackMethod>
             </Field>
 
             <Field id="thing4State" type="menu" defaultValue="None">
@@ -96,10 +96,10 @@
             <Field id="simpleSeparator5" type="separator"/>
 
             <!-- Channel field 5 -->
-            <Field id="thing5" type="menu" defaultValue="None" hidden="false">
+            <Field id="thing5" type="menu"  filter="5" defaultValue="None">
                 <Label>Thing 5:</Label>
                 <List class="self" filter="" method="listGenerator" dynamicReload="true"/>
-                <CallbackMethod>devStateGenerator5</CallbackMethod>
+                <CallbackMethod>devStateGenerator</CallbackMethod>
             </Field>
 
             <Field id="thing5State" type="menu" defaultValue="None">
@@ -110,10 +110,10 @@
             <Field id="simpleSeparator6" type="separator"/>
 
             <!-- Channel field 6 -->
-            <Field id="thing6" type="menu" defaultValue="None" hidden="false">
+            <Field id="thing6" type="menu"  filter="6" defaultValue="None">
                 <Label>Thing 6:</Label>
                 <List class="self" filter="" method="listGenerator" dynamicReload="true"/>
-                <CallbackMethod>devStateGenerator6</CallbackMethod>
+                <CallbackMethod>devStateGenerator</CallbackMethod>
             </Field>
 
             <Field id="thing6State" type="menu" defaultValue="None">
@@ -124,10 +124,10 @@
             <Field id="simpleSeparator7" type="separator"/>
 
             <!-- Channel field 7 -->
-            <Field id="thing7" type="menu" defaultValue="None" hidden="false">
+            <Field id="thing7" type="menu"  filter="7" defaultValue="None">
                 <Label>Thing 7:</Label>
                 <List class="self" filter="" method="listGenerator" dynamicReload="true"/>
-                <CallbackMethod>devStateGenerator7</CallbackMethod>
+                <CallbackMethod>devStateGenerator</CallbackMethod>
             </Field>
 
             <Field id="thing7State" type="menu" defaultValue="None">
@@ -138,10 +138,10 @@
             <Field id="simpleSeparator8" type="separator"/>
 
             <!-- Channel field 8 -->
-            <Field id="thing8" type="menu" defaultValue="None">
+            <Field id="thing8" type="menu"  filter="8" defaultValue="None">
                 <Label>Thing 8 :</Label>
                 <List class="self" filter="" method="listGenerator" dynamicReload="true"/>
-                <CallbackMethod>devStateGenerator8</CallbackMethod>
+                <CallbackMethod>devStateGenerator</CallbackMethod>
             </Field>
 
             <Field id="thing8State" type="menu" defaultValue="None">

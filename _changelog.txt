@@ -1,3 +1,7 @@
+v1.2.13
+- Consolidates device config callbacks using filter attribute.
+- Code refinements.
+
 v1.2.12
 - Sync with GitHub
 
